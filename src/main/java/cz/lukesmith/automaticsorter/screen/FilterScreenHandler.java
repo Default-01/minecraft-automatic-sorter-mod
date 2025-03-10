@@ -1,6 +1,7 @@
 package cz.lukesmith.automaticsorter.screen;
 
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
+import cz.lukesmith.automaticsorter.network.FilterTypePayload;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -11,6 +12,7 @@ import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.math.BlockPos;
 
 public class FilterScreenHandler extends ScreenHandler {
 
@@ -19,8 +21,8 @@ public class FilterScreenHandler extends ScreenHandler {
     private final PropertyDelegate propertyDelegate;
 
 
-    public FilterScreenHandler(int syncId, PlayerInventory inventory, PacketByteBuf buf) {
-        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(buf.readBlockPos()), new ArrayPropertyDelegate(1));
+    public FilterScreenHandler(int syncId, PlayerInventory inventory, FilterTypePayload pos) {
+        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos.blockPos()), new ArrayPropertyDelegate(1));
     }
 
     public FilterScreenHandler(int syncId, PlayerInventory playerInventory,
@@ -43,6 +45,10 @@ public class FilterScreenHandler extends ScreenHandler {
         addPlayerHotbar(playerInventory);
 
         addProperties(propertyDelegate);
+    }
+
+    public FilterScreenHandler(int syncId, PlayerInventory playerInventory, Object o) {
+        this(syncId, playerInventory, playerInventory.player.getWorld().getBlockEntity(((PacketByteBuf) o).readBlockPos()), new ArrayPropertyDelegate(1));
     }
 
     @Override
@@ -76,6 +82,11 @@ public class FilterScreenHandler extends ScreenHandler {
     public int toggleFilterType() {
         int value = FilterBlockEntity.FilterTypeEnum.nextValue(this.getFilterType());
         propertyDelegate.set(0, value);
+        blockEntity.markDirty();
         return value;
+    }
+
+    public BlockPos getBlockPos() {
+        return blockEntity.getPos();
     }
 }
