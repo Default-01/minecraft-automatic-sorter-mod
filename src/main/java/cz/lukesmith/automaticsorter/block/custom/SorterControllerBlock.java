@@ -1,6 +1,5 @@
 package cz.lukesmith.automaticsorter.block.custom;
 
-import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
 import net.minecraft.block.*;
@@ -30,11 +29,6 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
 
     public SorterControllerBlock(Settings settings) {
         super(settings);
-    }
-
-    @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
-        return null;
     }
 
     @Override
