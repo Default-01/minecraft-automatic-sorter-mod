@@ -60,13 +60,13 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         return null;
     }
 
-    public void tick(World world, BlockPos pos, BlockState state) {
+    public static void tick(World world, BlockPos pos, BlockState state, SorterControllerBlockEntity e) {
         if (world.isClient) {
             return;
         }
 
-        if (ticker > 0) {
-            ticker--;
+        if (e.ticker > 0) {
+            e.ticker--;
             return;
         }
 
@@ -105,7 +105,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             }
         }
 
-        ticker = MAX_TICKER;
+        e.ticker = MAX_TICKER;
     }
 
     @Nullable

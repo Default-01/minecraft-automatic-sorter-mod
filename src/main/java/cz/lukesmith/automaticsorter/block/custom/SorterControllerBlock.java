@@ -50,7 +50,16 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return checkType(type, ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY, SorterControllerBlockEntity::tick);
+    }
+
+
+    /*
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return validateTicker(type, ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY,
                 (world1, pos, state1, blockEntity) -> blockEntity.tick(world1, pos, state1));
     }
+
+     */
 }

@@ -1,11 +1,8 @@
 package cz.lukesmith.automaticsorter.block.custom;
 
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
-import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.screen.NamedScreenHandlerFactory;
@@ -119,12 +116,6 @@ public class FilterBlock extends BlockWithEntity implements BlockEntityProvider 
         }
 
         return ActionResult.SUCCESS;
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return validateTicker(type, ModBlockEntities.FILTER_BLOCK_ENTITY,
-                (world1, pos, state1, blockEntity) -> blockEntity.tick(world1, pos, state1));
     }
 
     @Override

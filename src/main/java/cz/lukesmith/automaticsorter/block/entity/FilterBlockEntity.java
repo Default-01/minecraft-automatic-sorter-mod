@@ -18,7 +18,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class FilterBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, ImplementedInventory {
@@ -86,12 +85,6 @@ public class FilterBlockEntity extends BlockEntity implements ExtendedScreenHand
                 return 1;
             }
         });
-    }
-
-    public void tick(World world, BlockPos pos, BlockState state) {
-        if (world.isClient) {
-            // Tick metoda se neprovádí na klientské straně
-        }
     }
 
     public int getFilterType() {
