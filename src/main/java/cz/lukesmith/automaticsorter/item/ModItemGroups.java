@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 
 public class ModItemGroups {
 
-    private static final ItemGroup ITEM_GROUP = FabricItemGroup.builder(new Identifier("tutorial", "test_group"))
+    private static final ItemGroup ITEM_GROUP = FabricItemGroup.builder(new Identifier(AutomaticSorter.MOD_ID, "automatic_sorter_group"))
             .icon(() -> new ItemStack(ModBlocks.PIPE_BLOCK)).entries(((displayContext, entries) -> {
                 entries.add(ModBlocks.PIPE_BLOCK);
                 entries.add(ModBlocks.SORTER_CONTROLLER_BLOCK);
