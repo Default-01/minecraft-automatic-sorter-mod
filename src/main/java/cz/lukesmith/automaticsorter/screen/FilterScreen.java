@@ -40,7 +40,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         receiveItemsButton = ButtonWidget.builder(Text.of(""), button -> {
             int value = handler.toggleFilterType();
             sendFilterTypeUpdate(value);
-        }).dimensions(this.x + 6, this.y + 14, 17, 17).build();
+        }).dimensions(this.x + 4, this.y + 13, 20, 20).build();
 
         this.addDrawableChild(receiveItemsButton);
     }
@@ -76,20 +76,16 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
             renderTooltip(matrices, getButtonText(), mouseX, mouseY);
         }
 
-        if (!receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            receiveItemsButton.setFocused(false);
-        }
-
         int filterType = handler.getFilterType();
         ItemStack renderButtonBlock = filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue() ? FILTER_BLOCK : CHEST_BLOCK;
         ItemRenderer itemRenderer = MinecraftClient.getInstance().getItemRenderer();
 
         switch (filterType) {
             case 0:
-                itemRenderer.renderInGui(matrices, renderButtonBlock, this.x + 7, this.y + 15);
+                itemRenderer.renderInGui(renderButtonBlock, this.x + 6, this.y + 15);
                 break;
             case 1:
-                itemRenderer.renderGuiItemIcon(matrices, renderButtonBlock, this.x + 7, this.y + 14);
+                itemRenderer.renderGuiItemIcon(renderButtonBlock, this.x + 6, this.y + 14);
                 int x = this.x + 25;
                 int y = this.y + 14;
                 int width = 8 * 18;
