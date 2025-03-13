@@ -37,10 +37,10 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         titleY = 1000;
         playerInventoryTitleY = 1000;
 
-        receiveItemsButton = ButtonWidget.builder(Text.of(""), button -> {
+        receiveItemsButton = new ButtonWidget(this.x + 4, this.y + 13, 20, 20, Text.of(""), button -> {
             int value = handler.toggleFilterType();
             sendFilterTypeUpdate(value);
-        }).dimensions(this.x + 4, this.y + 13, 20, 20).build();
+        });
 
         this.addDrawableChild(receiveItemsButton);
     }
@@ -57,7 +57,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.setShaderTexture(0, TEXTURE);
         int x = (width - backgroundWidth) / 2;

@@ -46,7 +46,7 @@ public class FilterScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
+    public ItemStack transferSlot(PlayerEntity player, int index) {
         return ItemStack.EMPTY;
     }
 
