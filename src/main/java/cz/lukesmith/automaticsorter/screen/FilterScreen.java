@@ -8,11 +8,11 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
@@ -54,6 +54,53 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         buf.writeInt(value);
         ClientPlayNetworking.send(new Identifier(AutomaticSorter.MOD_ID, "update_receive_items"), buf);
     }
+
+    @Override
+    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderTexture(0, TEXTURE);
+        int x = (width - backgroundWidth) / 2;
+        int y = (height - backgroundHeight) / 2;
+
+        drawTexture(matrices, x, y, 0, 0, backgroundWidth, backgroundHeight);
+    }
+
+    @Override
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
+        drawMouseoverTooltip(matrices, mouseX, mouseY);
+
+        if (receiveItemsButton.isMouseOver(mouseX, mouseY)) {
+            renderTooltip(matrices, getButtonText(), mouseX, mouseY);
+        }
+
+        if (!receiveItemsButton.isMouseOver(mouseX, mouseY)) {
+            receiveItemsButton.setFocused(false);
+        }
+
+        int filterType = handler.getFilterType();
+        ItemStack renderButtonBlock = filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue() ? FILTER_BLOCK : CHEST_BLOCK;
+        ItemRenderer itemRenderer = MinecraftClient.getInstance().getItemRenderer();
+
+        switch (filterType) {
+            case 0:
+                itemRenderer.renderInGui(matrices, renderButtonBlock, this.x + 7, this.y + 15);
+                break;
+            case 1:
+                itemRenderer.renderGuiItemIcon(matrices, renderButtonBlock, this.x + 7, this.y + 14);
+                int x = this.x + 25;
+                int y = this.y + 14;
+                int width = 8 * 18;
+                int height = 3 * 18;
+                int color = 0x80000000;
+                fill(matrices, x, y, x + width, y + height, color);
+                break;
+        }
+    }
+
+    /*
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
@@ -99,4 +146,6 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
                 break;
         }
     }
+
+     */
 }
