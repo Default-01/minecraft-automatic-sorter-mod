@@ -7,6 +7,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -43,14 +44,15 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        BlockState newState = world.getBlockState(pos);
         if (state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof SorterControllerBlockEntity) {
                 ItemScatterer.spawn(world, pos, (SorterControllerBlockEntity) blockEntity);
                 world.updateComparators(pos,this);
             }
-            super.onStateReplaced(state, world, pos, newState, moved);
+            super.onStateReplaced(state, world, pos, moved);
         }
     }
 

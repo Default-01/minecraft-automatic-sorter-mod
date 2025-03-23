@@ -46,7 +46,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
         Inventories.readNbt(nbt, inventory, registryLookup);
-        filterType = nbt.getInt("FilterType");
+        filterType = nbt.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
     }
 
     @Override
