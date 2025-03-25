@@ -2,11 +2,9 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
+import cz.lukesmith.automaticsorter.util.InventoryUtils;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -69,23 +67,23 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
 
         BlockPos rootChestPos = pos.up();
 
-        Inventory rootChestInventory = getInventoryFromPosition(world, rootChestPos);
-        if (rootChestInventory != null) {
+        InventoryUtils rootChestInventory = InventoryUtils.getInventoryUtils(world, rootChestPos);
+        if (!rootChestInventory.getInventories().isEmpty()) {
             for (BlockPos filterPos : connectedFilters) {
                 Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
                 BlockPos chestPos = filterPos.offset(filterDirection);
-                Inventory inventory = getInventoryFromPosition(world, chestPos);
-                if (inventory != null) {
+                InventoryUtils inventoryUtils = InventoryUtils.getInventoryUtils(world, chestPos);
+                if (!inventoryUtils.getInventories().isEmpty()) {
                     BlockEntity filterEntity = world.getBlockEntity(filterPos);
                     if (filterEntity instanceof FilterBlockEntity filterBlockEntity) {
                         int filterType = filterBlockEntity.getFilterType();
                         boolean itemTransfered;
                         switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
                             case WHITELIST:
-                                itemTransfered = transferWhitelistItem(rootChestInventory, inventory, filterBlockEntity);
+                                itemTransfered = transferWhitelistItem(rootChestInventory, inventoryUtils, filterBlockEntity);
                                 break;
                             case IN_INVENTORY:
-                                itemTransfered = transferCommonItem(rootChestInventory, inventory);
+                                itemTransfered = transferCommonItem(rootChestInventory, inventoryUtils);
                                 break;
                             default:
                                 throw new IllegalStateException("Unexpected value: " + FilterBlockEntity.FilterTypeEnum.fromValue(filterType));
@@ -100,19 +98,6 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
         }
 
         ticker = MAX_TICKER;
-    }
-
-    @Nullable
-    private static Inventory getInventoryFromPosition(World world, BlockPos pos) {
-        Block block = world.getBlockState(pos).getBlock();
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (block instanceof ChestBlock chestBlock) {
-            return ChestBlock.getInventory(chestBlock, world.getBlockState(pos), world, pos, true);
-        } else if (blockEntity instanceof BarrelBlockEntity barrelBlockEntity) {
-            return barrelBlockEntity;
-        }
-
-        return null;
     }
 
     private static boolean transferWhitelistItem(Inventory from, Inventory to, FilterBlockEntity filterBlockEntity) {
