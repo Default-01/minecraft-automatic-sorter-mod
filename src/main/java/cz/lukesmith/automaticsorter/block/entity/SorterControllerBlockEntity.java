@@ -69,6 +69,8 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
 
         InventoryUtils rootChestInventory = InventoryUtils.getInventoryUtils(world, rootChestPos);
         if (!rootChestInventory.getInventories().isEmpty()) {
+            Set<BlockPos> noFilterBlockPos = new HashSet<>();
+            boolean itemTransfered = false;
             for (BlockPos filterPos : connectedFilters) {
                 Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
                 BlockPos chestPos = filterPos.offset(filterDirection);
@@ -77,13 +79,17 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
                     BlockEntity filterEntity = world.getBlockEntity(filterPos);
                     if (filterEntity instanceof FilterBlockEntity filterBlockEntity) {
                         int filterType = filterBlockEntity.getFilterType();
-                        boolean itemTransfered;
+                        itemTransfered = false;
                         switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
                             case WHITELIST:
                                 itemTransfered = transferWhitelistItem(rootChestInventory, inventoryUtils, filterBlockEntity);
                                 break;
                             case IN_INVENTORY:
                                 itemTransfered = transferCommonItem(rootChestInventory, inventoryUtils);
+                                break;
+                            case REJECTS:
+                                itemTransfered = false;
+                                noFilterBlockPos.add(filterPos);
                                 break;
                             default:
                                 throw new IllegalStateException("Unexpected value: " + FilterBlockEntity.FilterTypeEnum.fromValue(filterType));
@@ -95,11 +101,23 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
                     }
                 }
             }
+
+            if (!noFilterBlockPos.isEmpty() && !itemTransfered) {
+                transferRejectedItem(world, noFilterBlockPos, rootChestInventory);
+            }
         }
 
         ticker = MAX_TICKER;
     }
 
+    /**
+     * Transfers an item from one inventory to another if the item is present in the whitelist of the filter.
+     *
+     * @param from
+     * @param to
+     * @param filterBlockEntity
+     * @return
+     */
     private static boolean transferWhitelistItem(Inventory from, Inventory to, FilterBlockEntity filterBlockEntity) {
         for (int i = 0; i < from.size(); i++) {
             ItemStack stack = from.getStack(i);
@@ -125,7 +143,14 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
         return false;
     }
 
-    public static boolean transferCommonItem(Inventory from, Inventory to) {
+    /**
+     * Transfers an item from one inventory to another if the item is present in the target inventory.
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    private static boolean transferCommonItem(Inventory from, Inventory to) {
         for (int i = 0; i < from.size(); i++) {
             ItemStack stack = from.getStack(i);
             if (!stack.isEmpty() && containsItem(to, stack)) {
@@ -144,6 +169,39 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
         return false;
     }
 
+    private static boolean transferRejectedItem(World world, Set<BlockPos> noFilterBlockPos, Inventory rootChestInventory) {
+        for (BlockPos filterPos : noFilterBlockPos) {
+            Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
+            BlockPos chestPos = filterPos.offset(filterDirection);
+            InventoryUtils inventoryUtils = InventoryUtils.getInventoryUtils(world, chestPos);
+            if (!inventoryUtils.getInventories().isEmpty()) {
+                for (int i = 0; i < rootChestInventory.size(); i++) {
+                    ItemStack stack = rootChestInventory.getStack(i);
+                    if (!stack.isEmpty()) {
+                        ItemStack singleItem = stack.split(1); // Remove one item from the current stack
+                        ItemStack remaining = transferItem(inventoryUtils, singleItem);
+
+                        if (remaining.isEmpty()) {
+                            rootChestInventory.setStack(i, stack);
+                            return true;
+                        } else {
+                            stack.increment(1); // Revert the split if the item was not transferred
+                            rootChestInventory.setStack(i, stack);
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the inventory contains the specified item.
+     * @param inventory
+     * @param item
+     * @return
+     */
     private static boolean containsItem(Inventory inventory, ItemStack item) {
         for (int i = 0; i < inventory.size(); i++) {
             if (ItemStack.areItemsEqual(inventory.getStack(i), item)) {
@@ -154,14 +212,22 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
         return false;
     }
 
+    /**
+     * Transfers an item from one inventory to another.
+     * @param to
+     * @param item
+     * @return
+     */
     private static ItemStack transferItem(Inventory to, ItemStack item) {
-        to.size();
-        for (int i = 0; i < to.size(); i++) {
+        int size = to.size();
+        for (int i = 0; i < size; i++) {
             ItemStack stackInSlot = to.getStack(i);
             if (stackInSlot.isEmpty()) {
+                // If the slot is empty, transfer the item to this slot
                 to.setStack(i, item);
                 return ItemStack.EMPTY;
             } else if (ItemStack.areItemsEqual(stackInSlot, item)) {
+                // If the item is the same
                 int transferAmount = Math.min(item.getCount(), stackInSlot.getMaxCount() - stackInSlot.getCount());
                 stackInSlot.increment(transferAmount);
                 item.decrement(transferAmount);
@@ -171,9 +237,16 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
             }
         }
 
+        // If the item could not be transferred to any slot, return it back
         return item;
     }
 
+    /**
+     * Finds all connected pipes starting from the given position.
+     * @param world
+     * @param startPos
+     * @return
+     */
     private static Set<BlockPos> findConnectedPipes(World world, BlockPos startPos) {
         Set<BlockPos> visited = new HashSet<>();
         BlockPos belowPos = startPos.down();
@@ -202,6 +275,12 @@ public class SorterControllerBlockEntity extends BlockEntity implements Implemen
         return visited;
     }
 
+    /**
+     * Finds all connected filters starting from the given pipe positions.
+     * @param world
+     * @param pipePositions
+     * @return
+     */
     private static Set<BlockPos> findConnectedFilters(World world, Set<BlockPos> pipePositions) {
         Set<BlockPos> filterPositions = new HashSet<>();
 
