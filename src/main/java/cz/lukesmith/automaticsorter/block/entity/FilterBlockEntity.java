@@ -122,9 +122,11 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
 
     public enum FilterTypeEnum {
         WHITELIST(0),
-        IN_INVENTORY(1);
+        IN_INVENTORY(1),
+        REJECTS(2);
 
         private final int value;
+
 
         FilterTypeEnum(int value) {
             this.value = value;
@@ -144,13 +146,18 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         }
 
         public static int nextValue(int number) {
-            return (number + 1) % values().length;
+            return switch (FilterTypeEnum.fromValue(number)) {
+                case WHITELIST -> FilterTypeEnum.IN_INVENTORY.getValue();
+                case IN_INVENTORY -> FilterTypeEnum.REJECTS.getValue();
+                case REJECTS -> FilterTypeEnum.WHITELIST.getValue();
+            };
         }
 
         public static String getName(FilterTypeEnum type) {
             return switch (type) {
                 case WHITELIST -> "Whitelist";
                 case IN_INVENTORY -> "In Inventory";
+                case REJECTS -> "Rejects";
             };
         }
 
