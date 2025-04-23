@@ -25,6 +25,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
     private ButtonWidget receiveItemsButton;
     private static final ItemStack CHEST_BLOCK = new ItemStack(Blocks.CHEST);
     private static final ItemStack FILTER_BLOCK = new ItemStack(ModBlocks.FILTER_BLOCK);
+    private static final ItemStack NO_FILTER = new ItemStack(Blocks.HOPPER);
 
 
     public FilterScreen(FilterScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -40,7 +41,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         receiveItemsButton = ButtonWidget.builder(Text.of(""), button -> {
             int value = handler.toggleFilterType();
             sendFilterTypeUpdate(value);
-        }).dimensions(this.x + 6, this.y + 14, 17, 17).build();
+        }).dimensions(this.x + 6, this.y + 14, 18, 18).build();
 
         this.addDrawableChild(receiveItemsButton);
     }
@@ -82,14 +83,12 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         }
 
         int filterType = handler.getFilterType();
-        ItemStack renderButtonBlock = filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue() ? FILTER_BLOCK : CHEST_BLOCK;
+        ItemStack renderButtonBlock = getDisplayedItemStack();
+        context.drawItem(renderButtonBlock, this.x + 7, this.y + 15);
 
-        switch (filterType) {
-            case 0:
-                context.drawItem(renderButtonBlock, this.x + 7, this.y + 15);
-                break;
-            case 1:
-                context.drawItem(renderButtonBlock, this.x + 7, this.y + 14);
+        switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
+            case REJECTS:
+            case IN_INVENTORY:
                 int x = this.x + 25;
                 int y = this.y + 14;
                 int width = 8 * 18;
@@ -97,6 +96,19 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
                 int color = 0x80000000;
                 context.fill(x, y, x + width, y + height, color);
                 break;
+            default:
+                break;
+        }
+    }
+
+    private ItemStack getDisplayedItemStack() {
+        int filterType = handler.getFilterType();
+        if (filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue()) {
+            return FILTER_BLOCK;
+        } else if (filterType == FilterBlockEntity.FilterTypeEnum.IN_INVENTORY.getValue()) {
+            return CHEST_BLOCK;
+        } else {
+            return NO_FILTER;
         }
     }
 }
