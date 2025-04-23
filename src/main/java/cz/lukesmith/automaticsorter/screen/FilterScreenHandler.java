@@ -17,6 +17,7 @@ public class FilterScreenHandler extends ScreenHandler {
     private final Inventory inventory;
     public final FilterBlockEntity blockEntity;
     private final PropertyDelegate propertyDelegate;
+    private final int inventorySize = 24;
 
 
     public FilterScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
@@ -26,7 +27,7 @@ public class FilterScreenHandler extends ScreenHandler {
     public FilterScreenHandler(int syncId, PlayerInventory playerInventory,
                                BlockEntity blockEntity, PropertyDelegate propertyDelegate) {
         super(ModScreenHandlers.FILTER_SCREEN_HANDLER, syncId);
-        checkSize(((Inventory) blockEntity), 24);
+        checkSize(((Inventory) blockEntity), inventorySize);
         this.inventory = ((Inventory) blockEntity);
         inventory.onOpen(playerInventory.player);
         this.blockEntity = ((FilterBlockEntity) blockEntity);
@@ -47,7 +48,34 @@ public class FilterScreenHandler extends ScreenHandler {
 
     @Override
     public ItemStack quickMove(PlayerEntity player, int slot) {
-        return ItemStack.EMPTY;
+        Slot sourceSlot = this.slots.get(slot);
+        if (sourceSlot == null || !sourceSlot.hasStack()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack sourceStack = sourceSlot.getStack();
+        ItemStack singleItemStack = sourceStack.copy();
+        singleItemStack.setCount(1);
+
+        if (slot < 24) {
+            if (!this.insertItem(singleItemStack, inventorySize, this.slots.size(), true)) {
+                return ItemStack.EMPTY;
+            }
+        } else {
+            if (!this.insertItem(singleItemStack, 0, inventorySize, false)) {
+                return ItemStack.EMPTY;
+            }
+        }
+
+        sourceStack.decrement(1);
+
+        if (sourceStack.isEmpty()) {
+            sourceSlot.setStack(ItemStack.EMPTY);
+        } else {
+            sourceSlot.markDirty();
+        }
+
+        return singleItemStack;
     }
 
     @Override
