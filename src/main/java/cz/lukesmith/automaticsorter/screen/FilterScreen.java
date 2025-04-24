@@ -25,7 +25,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
     private ButtonWidget receiveItemsButton;
     private static final ItemStack CHEST_BLOCK = new ItemStack(Blocks.CHEST);
     private static final ItemStack FILTER_BLOCK = new ItemStack(ModBlocks.FILTER_BLOCK);
-    private static final ItemStack NO_FILTER = new ItemStack(Blocks.HOPPER);
+    private static final ItemStack REJECTS = new ItemStack(Blocks.BARRIER);
 
 
     public FilterScreen(FilterScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -104,7 +104,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         } else if (filterType == FilterBlockEntity.FilterTypeEnum.IN_INVENTORY.getValue()) {
             return CHEST_BLOCK;
         } else {
-            return NO_FILTER;
+            return REJECTS;
         }
     }
 }
