@@ -48,12 +48,7 @@ public class FilterScreenHandler extends ScreenHandler {
 
     @Override
     public ItemStack transferSlot(PlayerEntity player, int index) {
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
-        Slot sourceSlot = this.slots.get(slot);
+        Slot sourceSlot = this.slots.get(index);
         if (sourceSlot == null || !sourceSlot.hasStack()) {
             return ItemStack.EMPTY;
         }
@@ -62,7 +57,7 @@ public class FilterScreenHandler extends ScreenHandler {
         ItemStack singleItemStack = sourceStack.copy();
         singleItemStack.setCount(1);
 
-        if (slot < inventorySize) {
+        if (index < inventorySize) {
             if (this.insertItem(singleItemStack, inventorySize, this.slots.size(), true)) {
                 sourceStack.decrement(1);
                 sourceSlot.markDirty();
