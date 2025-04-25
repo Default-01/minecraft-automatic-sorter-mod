@@ -1,5 +1,6 @@
 package cz.lukesmith.automaticsorter.block.custom;
 
+import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import net.minecraft.block.*;
@@ -32,6 +33,11 @@ public class FilterBlock extends BlockWithEntity implements BlockEntityProvider 
     public FilterBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.UP));
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return null;
     }
 
     @Override
