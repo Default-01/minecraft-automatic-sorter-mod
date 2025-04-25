@@ -63,13 +63,11 @@ public class FilterScreenHandler extends ScreenHandler {
         singleItemStack.setCount(1);
 
         if (slot < inventorySize) {
-            // Přesun z filtru do hráčova inventáře
             if (this.insertItem(singleItemStack, inventorySize, this.slots.size(), true)) {
                 sourceStack.decrement(1);
                 sourceSlot.markDirty();
             }
         } else {
-            // Přesun z hráčova inventáře do filtru
             for (int i = 0; i < inventorySize; i++) {
                 Slot targetSlot = this.slots.get(i);
                 if (!targetSlot.hasStack()) {
@@ -82,7 +80,7 @@ public class FilterScreenHandler extends ScreenHandler {
             }
         }
 
-        return ItemStack.EMPTY; // Vrací prázdný stack, aby se smyčka ukončila
+        return ItemStack.EMPTY;
     }
 
     @Override
