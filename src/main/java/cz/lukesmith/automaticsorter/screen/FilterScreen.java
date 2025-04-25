@@ -41,7 +41,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         receiveItemsButton = ButtonWidget.builder(Text.of(""), button -> {
             int value = handler.toggleFilterType();
             sendFilterTypeUpdate(value);
-        }).dimensions(this.x + 4, this.y + 13, 20, 20).build();
+        }).dimensions(this.x + 6, this.y + 14, 18, 18).build();
 
         this.addDrawableChild(receiveItemsButton);
     }
@@ -78,68 +78,22 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         }
 
         int filterType = handler.getFilterType();
-        ItemStack renderButtonBlock = filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue() ? FILTER_BLOCK : CHEST_BLOCK;
+        ItemStack renderButtonBlock = getDisplayedItemStack();
         ItemRenderer itemRenderer = MinecraftClient.getInstance().getItemRenderer();
 
-        switch (filterType) {
-            case 0:
+        switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
+            case WHITELIST:
                 itemRenderer.renderInGui(renderButtonBlock, this.x + 6, this.y + 15);
                 break;
-            case 1:
-                itemRenderer.renderGuiItemIcon(renderButtonBlock, this.x + 6, this.y + 14);
+            case IN_INVENTORY:
+            case REJECTS:
+                itemRenderer.renderGuiItemIcon(renderButtonBlock, this.x + 6, this.y + 15);
                 int x = this.x + 25;
                 int y = this.y + 14;
                 int width = 8 * 18;
                 int height = 3 * 18;
                 int color = 0x80000000;
                 fill(matrices, x, y, x + width, y + height, color);
-                break;
-        }
-    }
-
-    /*
-
-    @Override
-    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        int x = (width - backgroundWidth) / 2;
-        int y = (height - backgroundHeight) / 2;
-
-        context.drawTexture(TEXTURE, x, y, 0, 0, backgroundWidth, backgroundHeight);
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
-        super.render(context, mouseX, mouseY, delta);
-        drawMouseoverTooltip(context, mouseX, mouseY);
-
-        if (receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            context.drawTooltip(textRenderer, getButtonText(), mouseX, mouseY);
-        }
-
-        if (!receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            receiveItemsButton.setFocused(false);
-        }
-
-        int filterType = handler.getFilterType();
-        ItemStack renderButtonBlock = getDisplayedItemStack();
-        context.drawItem(renderButtonBlock, this.x + 7, this.y + 15);
-
-        switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
-            case REJECTS:
-            case IN_INVENTORY:
-                int x = this.x + 25;
-                int y = this.y + 14;
-                int width = 8 * 18;
-                int height = 3 * 18;
-                int color = 0x80000000;
-                context.fill(x, y, x + width, y + height, color);
-                break;
-            default:
                 break;
         }
     }
@@ -154,6 +108,4 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
             return REJECTS;
         }
     }
-
-     */
 }
