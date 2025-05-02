@@ -18,7 +18,7 @@ public class AutomaticSorterClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(FilterTypePayload.ID, (payload, context) -> {
             context.client().execute(() -> {
-                AutomaticSorter.LOGGER.info("Received packet");
+
             });
         });
     }
