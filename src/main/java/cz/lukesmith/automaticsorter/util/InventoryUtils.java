@@ -1,6 +1,5 @@
 package cz.lukesmith.automaticsorter.util;
 
-import cz.lukesmith.automaticsorter.AutomaticSorter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -71,8 +70,6 @@ public class InventoryUtils implements Inventory {
                     BlockPos secondPos = pos.offset(direction);
                     BlockEntity secondBlockEntity = world.getBlockEntity(secondPos);
                     Direction facing = world.getBlockState(pos).get(ChestBlock.FACING);
-                    AutomaticSorter.LOGGER.info("Direction: " + direction);
-                    AutomaticSorter.LOGGER.info("Facing: " + world.getBlockState(pos).get(ChestBlock.FACING));
                     if (direction == Direction.UP) {
                         inventoryUtils.addInventoryAsFirst(getExpandedStorageInventory(secondBlockEntity));
                     } else if (
@@ -86,12 +83,12 @@ public class InventoryUtils implements Inventory {
                     }
 
 
-                } catch (InvocationTargetException e) {
-                    AutomaticSorter.LOGGER.info("Direction: " + e.getMessage());
+                } catch (InvocationTargetException ignored) {
+
                 }
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-            AutomaticSorter.LOGGER.info("getExpandedStorageChests: " + e.getMessage());
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException ignored) {
+
         }
 
         return inventoryUtils;
@@ -109,8 +106,8 @@ public class InventoryUtils implements Inventory {
                 }
             }
         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
-                 IllegalAccessException e) {
-            AutomaticSorter.LOGGER.info("ExpandedStorage: " + e.getMessage());
+                 IllegalAccessException ignored) {
+
         }
 
         return null;
