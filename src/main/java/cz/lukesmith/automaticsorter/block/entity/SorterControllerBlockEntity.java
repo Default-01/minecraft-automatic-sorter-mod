@@ -206,9 +206,11 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                 }
             }
 
-            for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter)) {
-                    break;
+            if (!itemTransfered) {
+                for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
+                    if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter)) {
+                        break;
+                    }
                 }
             }
         }
