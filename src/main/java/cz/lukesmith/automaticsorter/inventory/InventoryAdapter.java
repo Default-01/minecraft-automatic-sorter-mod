@@ -22,7 +22,7 @@ public class InventoryAdapter implements IInventoryAdapter {
         int size = inventory.size();
         for (int i = 0; i < size; i++) {
             ItemStack stack = inventory.getStack(i);
-            if (ItemStack.areItemsEqual(stack, itemStack)) {
+            if (ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
                 return stack;
             }
         }
@@ -41,7 +41,7 @@ public class InventoryAdapter implements IInventoryAdapter {
         ItemStack tranferStack = itemStack.copyWithCount(1);
         for (int i = 0; i < size; i++) {
             ItemStack stack = inventory.getStack(i);
-            if (ItemStack.areItemsEqual(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
+            if (ItemStack.areItemsAndComponentsEqual(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
                 stack.increment(1);
                 inventory.markDirty();
                 return true;
