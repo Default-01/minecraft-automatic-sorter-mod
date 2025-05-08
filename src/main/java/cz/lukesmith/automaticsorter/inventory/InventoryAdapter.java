@@ -38,7 +38,8 @@ public class InventoryAdapter implements IInventoryAdapter {
     @Override
     public boolean addItem(ItemStack itemStack) {
         int size = inventory.size();
-        ItemStack tranferStack = itemStack.copyWithCount(1);
+        ItemStack tranferStack = itemStack.copy();
+        tranferStack.setCount(1);
         for (int i = 0; i < size; i++) {
             ItemStack stack = inventory.getStack(i);
             if (ItemStack.canCombine(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {

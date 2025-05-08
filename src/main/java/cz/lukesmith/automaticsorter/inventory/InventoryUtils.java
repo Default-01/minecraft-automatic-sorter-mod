@@ -113,7 +113,7 @@ public class InventoryUtils {
     // Expanded Storage Mod
 
     private static String getExpandedStorageClassName() {
-        return "compasses.expandedstorage.impl.block.AbstractChestBlock";
+        return "compasses.expandedstorage.common.block.AbstractChestBlock";
     }
 
     private static boolean isExpandedStorageChest(Block block) {
