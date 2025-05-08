@@ -113,7 +113,7 @@ public class InventoryUtils {
     // Expanded Storage Mod
 
     private static String getExpandedStorageClassName() {
-        return "dev.compasses.expandedstorage.block.AbstractChestBlock";
+        return "compasses.expandedstorage.impl.block.AbstractChestBlock";
     }
 
     private static boolean isExpandedStorageChest(Block block) {
@@ -166,7 +166,7 @@ public class InventoryUtils {
 
     private static Inventory getExpandedStorageInventory(BlockEntity blockEntity) {
         try {
-            Class<?> chestBlockEntityClass = Class.forName("dev.compasses.expandedstorage.block.entity.ChestBlockEntity");
+            Class<?> chestBlockEntityClass = Class.forName("compasses.expandedstorage.impl.block.entity.ChestBlockEntity");
             if (chestBlockEntityClass.isInstance(blockEntity)) {
                 Object chestBlockEntity = chestBlockEntityClass.cast(blockEntity);
                 Method getInventory = chestBlockEntityClass.getMethod("getInventory");
