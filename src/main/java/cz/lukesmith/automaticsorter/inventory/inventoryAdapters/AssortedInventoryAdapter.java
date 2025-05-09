@@ -1,5 +1,6 @@
-package cz.lukesmith.automaticsorter.inventory;
+package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
+import cz.lukesmith.automaticsorter.inventory.inventoryUtils.AssortedInventoryUtil;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 
@@ -68,8 +69,8 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
 
     private void extractItem(int index, int amount) {
         try {
-            Object storageHandler = InventoryUtils.getAssortedStorageItemStackStorageHandler(this.blockEntity);
-            Class<?> itemStackStorageHandlerClass = Class.forName(InventoryUtils.getAssortedStorageItemStackStorageHandlerClassName());
+            Object storageHandler = AssortedInventoryUtil.getAssortedStorageItemStackStorageHandler(this.blockEntity);
+            Class<?> itemStackStorageHandlerClass = Class.forName(AssortedInventoryUtil.STORAGE_HANDLER_CLASSNAME);
             Method insertItemMethod = itemStackStorageHandlerClass.getDeclaredMethod("extractItem", int.class, int.class, boolean.class);
             insertItemMethod.invoke(storageHandler, index, amount, false);
         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
@@ -80,8 +81,8 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
 
     private void insertItem(int index, ItemStack itemstack) {
         try {
-            Object storageHandler = InventoryUtils.getAssortedStorageItemStackStorageHandler(this.blockEntity);
-            Class<?> itemStackStorageHandlerClass = Class.forName(InventoryUtils.getAssortedStorageItemStackStorageHandlerClassName());
+            Object storageHandler = AssortedInventoryUtil.getAssortedStorageItemStackStorageHandler(this.blockEntity);
+            Class<?> itemStackStorageHandlerClass = Class.forName(AssortedInventoryUtil.STORAGE_HANDLER_CLASSNAME);
             Method insertItemMethod = itemStackStorageHandlerClass.getDeclaredMethod("insertItem", int.class, ItemStack.class, boolean.class);
             insertItemMethod.invoke(storageHandler, index, itemstack, false);
         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |

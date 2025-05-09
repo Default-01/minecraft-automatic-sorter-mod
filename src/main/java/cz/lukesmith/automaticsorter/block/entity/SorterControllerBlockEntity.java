@@ -2,9 +2,9 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
-import cz.lukesmith.automaticsorter.inventory.IInventoryAdapter;
-import cz.lukesmith.automaticsorter.inventory.InventoryUtils;
-import cz.lukesmith.automaticsorter.inventory.NoInventoryAdapter;
+import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
+import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
+import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -131,7 +131,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     private static boolean tryToTransferItem(World world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
         Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
         BlockPos chestPos = filterPos.offset(filterDirection);
-        IInventoryAdapter chestInventoryAdapter = InventoryUtils.getInventoryAdapter(world, chestPos);
+        IInventoryAdapter chestInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, chestPos);
         if (chestInventoryAdapter instanceof NoInventoryAdapter) {
             return false;
         }
@@ -139,7 +139,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         int filterType = filterBlockEntity.getFilterType();
         return switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
             case WHITELIST -> {
-                IInventoryAdapter filterInventoryAdapter = InventoryUtils.getInventoryAdapter(world, filterPos);
+                IInventoryAdapter filterInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, filterPos);
                 yield tryWhitelistMode(rootInventoryAdapter, chestInventoryAdapter, filterInventoryAdapter);
             }
             case IN_INVENTORY -> tryInInventoryMode(rootInventoryAdapter, chestInventoryAdapter);
@@ -166,7 +166,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             Queue<BlockPos> queue = new LinkedList<>();
             queue.add(belowPos);
 
-            IInventoryAdapter rootInventoryAdapter = InventoryUtils.getInventoryAdapter(world, pos.up());
+            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.up());
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
             boolean itemTransfered = false;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();

@@ -1,4 +1,4 @@
-package cz.lukesmith.automaticsorter.inventory;
+package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
 import net.minecraft.item.ItemStack;
 
