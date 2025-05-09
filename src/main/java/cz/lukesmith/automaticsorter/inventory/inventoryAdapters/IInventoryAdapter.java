@@ -19,4 +19,16 @@ public interface IInventoryAdapter {
     default boolean isEmpty() {
         return getAllStacks().isEmpty();
     }
+
+    default boolean compareStacks(ItemStack insertingItem, ItemStack compareItem) {
+        if (insertingItem.isEnchantable()) {
+            return ItemStack.areItemsEqual(insertingItem, compareItem);
+        }
+
+        return ItemStack.areItemsAndComponentsEqual(insertingItem, compareItem);
+    }
+
+    default boolean canCombineStacks(ItemStack insertingItem, ItemStack compareItem) {
+        return ItemStack.areItemsAndComponentsEqual(insertingItem, compareItem);
+    }
 }

@@ -26,7 +26,7 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
         }
 
         for (ItemStack stack : itemStacks) {
-            if (ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
+            if (compareStacks(stack, itemStack)) {
                 return stack;
             }
         }
@@ -45,7 +45,7 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
         ItemStack tranferStack = itemStack.copyWithCount(1);
         for (int i = 0; i < size; i++) {
             ItemStack stack = itemStacks.get(i);
-            if (ItemStack.areItemsAndComponentsEqual(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
+            if (canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
                 insertItem(i, tranferStack);
                 return true;
             } else if (stack.isEmpty()) {
