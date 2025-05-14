@@ -1,8 +1,8 @@
 package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.AssortedInventoryUtil;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,7 +45,7 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
         ItemStack tranferStack = itemStack.copyWithCount(1);
         for (int i = 0; i < size; i++) {
             ItemStack stack = itemStacks.get(i);
-            if (canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
+            if (canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxStackSize()) {
                 insertItem(i, tranferStack);
                 return true;
             } else if (stack.isEmpty()) {

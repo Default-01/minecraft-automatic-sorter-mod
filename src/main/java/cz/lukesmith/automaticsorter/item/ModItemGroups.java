@@ -1,6 +1,5 @@
 package cz.lukesmith.automaticsorter.item;
 
-import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.ModBlocks;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.item.ItemGroup;

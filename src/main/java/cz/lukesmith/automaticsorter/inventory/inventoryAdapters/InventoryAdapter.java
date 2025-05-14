@@ -1,7 +1,7 @@
 package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 
@@ -19,9 +19,9 @@ public class InventoryAdapter implements IInventoryAdapter {
             return ItemStack.EMPTY;
         }
 
-        int size = inventory.size();
+        int size = inventory.getContainerSize();
         for (int i = 0; i < size; i++) {
-            ItemStack stack = inventory.getStack(i);
+            ItemStack stack = inventory.getItem(i);
             if (this.compareStacks(stack, itemStack)) {
                 return stack;
             }
@@ -32,22 +32,22 @@ public class InventoryAdapter implements IInventoryAdapter {
 
     @Override
     public void removeItem(int index, int amount) {
-        inventory.removeStack(index, amount);
+        inventory.removeItem(index, amount);
     }
 
     @Override
     public boolean addItem(ItemStack itemStack) {
-        int size = inventory.size();
+        int size = inventory.getContainerSize();
         ItemStack tranferStack = itemStack.copyWithCount(1);
         for (int i = 0; i < size; i++) {
-            ItemStack stack = inventory.getStack(i);
-            if (this.canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
-                stack.increment(1);
-                inventory.markDirty();
+            ItemStack stack = inventory.getItem(i);
+            if (this.canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxStackSize()) {
+                stack.grow(1);
+                inventory.createInventoryUpdatePacket(i);
                 return true;
             } else if (stack.isEmpty()) {
-                inventory.setStack(i, tranferStack);
-                inventory.markDirty();
+                inventory.setItem(i, tranferStack);
+                inventory.createInventoryUpdatePacket(i);
                 return true;
             }
         }
@@ -58,9 +58,9 @@ public class InventoryAdapter implements IInventoryAdapter {
     @Override
     public ArrayList<ItemStack> getAllStacks() {
         ArrayList<ItemStack> stacks = new ArrayList<>();
-        int size = inventory.size();
+        int size = inventory.getContainerSize();
         for (int i = 0; i < size; i++) {
-            ItemStack stack = inventory.getStack(i);
+            ItemStack stack = inventory.getItem(i);
             stacks.add(stack);
         }
 
@@ -69,6 +69,6 @@ public class InventoryAdapter implements IInventoryAdapter {
 
     @Override
     public int getSize() {
-        return inventory.size();
+        return inventory.getContainerSize();
     }
 }

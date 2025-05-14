@@ -1,6 +1,5 @@
 package cz.lukesmith.automaticsorter.block;
 
-import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
 import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;

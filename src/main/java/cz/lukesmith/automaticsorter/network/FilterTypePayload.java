@@ -1,12 +1,7 @@
 package cz.lukesmith.automaticsorter.network;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public record FilterTypePayload(BlockPos blockPos, int filterType) implements CustomPayload {
     public static final String NAME = "filter_type_change";

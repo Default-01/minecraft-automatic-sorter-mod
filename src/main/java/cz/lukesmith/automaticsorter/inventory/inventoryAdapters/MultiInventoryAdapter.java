@@ -1,6 +1,6 @@
 package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 
@@ -58,7 +58,7 @@ public class MultiInventoryAdapter implements IInventoryAdapter {
     }
 
     public void addInventoryAdapterAsFirst(IInventoryAdapter inventoryAdapter) {
-        inventoryAdapters.add(0, inventoryAdapter);
+        inventoryAdapters.addFirst(inventoryAdapter);
     }
 
     public void setInventoryAdapters(ArrayList<IInventoryAdapter> inventoryAdapters) {

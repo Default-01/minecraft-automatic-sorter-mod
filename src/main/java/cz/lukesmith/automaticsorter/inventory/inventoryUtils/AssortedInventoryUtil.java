@@ -3,12 +3,11 @@ package cz.lukesmith.automaticsorter.inventory.inventoryUtils;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.AssortedInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

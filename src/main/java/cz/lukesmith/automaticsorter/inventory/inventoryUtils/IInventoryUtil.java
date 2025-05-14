@@ -1,10 +1,9 @@
 package cz.lukesmith.automaticsorter.inventory.inventoryUtils;
 
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public interface IInventoryUtil {
 
