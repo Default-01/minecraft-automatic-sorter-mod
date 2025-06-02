@@ -1,20 +1,46 @@
 package cz.lukesmith.automaticsorter.block;
 
-import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
+import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
-import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import cz.lukesmith.automaticsorter.item.ModItems;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+
+import java.util.function.Supplier;
 
 public class ModBlocks {
 
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AutomaticSorter.MOD_ID);
+
+    public static final RegistryObject<Block> PIPE_BLOCK = registerBlock("pipe",
+            () -> new PipeBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "pipe")))
+                    .strength(1.0f, 2.0f).noOcclusion()));
+
+    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
+        RegistryObject<T> toReturn = BLOCKS.register(name, block);
+        registerBlockItem(name, toReturn);
+        return toReturn;
+    }
+
+    private static <T extends Block> void registerBlockItem(String name, RegistryObject<T> block) {
+        ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+    }
+
+    public static void register(IEventBus eventBus) {
+        BLOCKS.register(eventBus);
+    }
+
+    /*
     public static final Block PIPE_BLOCK = registerBlock("pipe",
             new PipeBlock(Block.Settings.copy(Blocks.COPPER_BLOCK)
                     .registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(AutomaticSorter.MOD_ID, "pipe")))
@@ -44,5 +70,5 @@ public class ModBlocks {
 
     public static void registerModBlocks() {
         AutomaticSorter.LOGGER.info("Registering ModBlocks for " + AutomaticSorter.MOD_ID);
-    }
+    }*/
 }

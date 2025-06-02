@@ -1,6 +1,7 @@
 package cz.lukesmith.automaticsorter;
 
 import com.mojang.logging.LogUtils;
+import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,6 +31,8 @@ public class AutomaticSorter {
         modEventBus.addListener(this::commonSetup);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+
+        ModItemGroups.register(modEventBus);
 
         ModItems.register(modEventBus);
 
