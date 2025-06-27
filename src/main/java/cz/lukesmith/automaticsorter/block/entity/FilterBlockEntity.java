@@ -15,6 +15,8 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -35,18 +37,22 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         return inventory;
     }
 
+
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        Inventories.writeNbt(nbt, inventory, registryLookup);
-        nbt.putInt("FilterType", filterType);
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+        return createNbt(registryLookup);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
-        Inventories.readNbt(nbt, inventory, registryLookup);
-        filterType = nbt.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        view.putInt("FilterType", filterType);
+    }
+
+    @Override
+    protected void readData(ReadView view) {
+        super.readData(view);
+        view.getOptionalInt("FilterType").ifPresent(integer -> this.filterType = integer);
     }
 
     @Override
