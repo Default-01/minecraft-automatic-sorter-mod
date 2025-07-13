@@ -113,7 +113,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
 
     public boolean isItemInInventory(ItemStack singleItem) {
         for (ItemStack stack : inventory) {
-            if (!stack.isEmpty() && ItemStack.areItemsEqual(stack, singleItem)) {
+            if (!stack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, singleItem)) {
                 return true;
             }
         }
