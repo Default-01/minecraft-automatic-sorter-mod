@@ -47,12 +47,16 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     protected void writeData(WriteView view) {
         super.writeData(view);
         view.putInt("FilterType", filterType);
+
+        Inventories.writeData(view, this.inventory);
     }
 
     @Override
     protected void readData(ReadView view) {
         super.readData(view);
         view.getOptionalInt("FilterType").ifPresent(integer -> this.filterType = integer);
+
+        Inventories.readData(view, this.inventory);
     }
 
     @Override
