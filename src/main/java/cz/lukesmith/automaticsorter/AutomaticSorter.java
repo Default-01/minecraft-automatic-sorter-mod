@@ -24,7 +24,7 @@ public class AutomaticSorter {
     // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "automaticsorter";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public AutomaticSorter(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
         // Register the commonSetup method for modloading

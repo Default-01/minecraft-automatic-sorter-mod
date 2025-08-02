@@ -1,35 +1,35 @@
 package cz.lukesmith.automaticsorter.screen;
 
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import org.jetbrains.annotations.NotNull;
 
-public class FilterScreenHandler extends ScreenHandler {
+public class FilterScreenHandler extends AbstractContainerMenu {
 
-    private final Inventory inventory;
+    private final Container inventory;
     public final FilterBlockEntity blockEntity;
-    private final PropertyDelegate propertyDelegate;
+    private final ContainerData propertyDelegate;
     private final int inventorySize = 24;
 
 
-    public FilterScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
-        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
+    public FilterScreenHandler(int syncId, Inventory inventory, BlockPos pos) {
+        this(syncId, inventory, inventory.player.level().getBlockEntity(pos), new SimpleContainerData(1));
     }
 
-    public FilterScreenHandler(int syncId, PlayerInventory playerInventory,
-                               BlockEntity blockEntity, PropertyDelegate propertyDelegate) {
-        super(ModScreenHandlers.FILTER_SCREEN_HANDLER, syncId);
-        checkSize(((Inventory) blockEntity), inventorySize);
-        this.inventory = ((Inventory) blockEntity);
-        inventory.onOpen(playerInventory.player);
+    public FilterScreenHandler(int syncId, Container playerInventory, BlockEntity blockEntity, ContainerData propertyDelegate) {
+        super(ModScreenHandlers.FILTER_SCREEN_HANDLER.get(), syncId);
+        checkContainerSize((Container) blockEntity, inventorySize);
+        this.inventory = ((Container) blockEntity);
+        inventory.startOpen(playerInventory.player);
         this.blockEntity = ((FilterBlockEntity) blockEntity);
         this.propertyDelegate = propertyDelegate;
 
@@ -43,17 +43,17 @@ public class FilterScreenHandler extends ScreenHandler {
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
 
-        addProperties(propertyDelegate);
+        addDataSlots(propertyDelegate);
     }
 
-    @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
+
+    public @NotNull ItemStack quickMoveStack(Player player, int slot) {
         Slot sourceSlot = this.slots.get(slot);
-        if (sourceSlot == null || !sourceSlot.hasStack()) {
+        if (sourceSlot == null || !sourceSlot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack sourceStack = sourceSlot.getStack();
+        ItemStack sourceStack = sourceSlot.getItem();
         ItemStack singleItemStack = sourceStack.copy();
         singleItemStack.setCount(1);
 
@@ -70,20 +70,25 @@ public class FilterScreenHandler extends ScreenHandler {
         sourceStack.decrement(1);
 
         if (sourceStack.isEmpty()) {
-            sourceSlot.setStack(ItemStack.EMPTY);
+            sourceSlot.set(ItemStack.EMPTY);
         } else {
-            sourceSlot.markDirty();
+            sourceSlot.setChanged();
         }
 
         return singleItemStack;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+    public boolean stillValid(Player pPlayer) {
+        return false;
     }
 
-    private void addPlayerInventory(PlayerInventory playerInventory) {
+    @Override
+    public boolean canUse(Player player) {
+        return this.inventory.stillValid(player);
+    }
+
+    private void addPlayerInventory(Container playerInventory) {
         for (int i = 0; i < 3; ++i) {
             for (int l = 0; l < 9; ++l) {
                 this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
@@ -91,7 +96,7 @@ public class FilterScreenHandler extends ScreenHandler {
         }
     }
 
-    private void addPlayerHotbar(PlayerInventory playerInventory) {
+    private void addPlayerHotbar(Container playerInventory) {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
@@ -104,11 +109,11 @@ public class FilterScreenHandler extends ScreenHandler {
     public int toggleFilterType() {
         int value = FilterBlockEntity.FilterTypeEnum.nextValue(this.getFilterType());
         propertyDelegate.set(0, value);
-        blockEntity.markDirty();
+        blockEntity.setChanged();
         return value;
     }
 
     public BlockPos getBlockPos() {
-        return blockEntity.getPos();
+        return blockEntity.getBlockPos();
     }
 }

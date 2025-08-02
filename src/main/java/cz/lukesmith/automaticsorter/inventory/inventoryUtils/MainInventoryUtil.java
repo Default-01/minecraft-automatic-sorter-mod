@@ -6,6 +6,7 @@ import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapt
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class MainInventoryUtil {
 
     @NotNull
-    public static IInventoryAdapter getInventoryAdapter(World world, BlockPos pos) {
+    public static IInventoryAdapter getInventoryAdapter(Level world, BlockPos pos) {
 
         IInventoryUtil expandedIU = new ExpandedInventoryUtil();
         IInventoryUtil assortedIU = new AssortedInventoryUtil();

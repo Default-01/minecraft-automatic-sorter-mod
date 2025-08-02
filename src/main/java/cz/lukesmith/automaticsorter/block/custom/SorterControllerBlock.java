@@ -3,19 +3,19 @@ package cz.lukesmith.automaticsorter.block.custom;
 import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class SorterControllerBlock extends BlockWithEntity implements BlockEntityProvider {
+import javax.swing.text.html.BlockView;
+
+public class SorterControllerBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = createCuboidShape(0, 0, 0, 16, 16, 16);
 
@@ -29,13 +29,8 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
         return BlockRenderType.MODEL;
     }
 
-    public SorterControllerBlock(Settings settings) {
+    public SorterControllerBlock(Properties settings) {
         super(settings);
-    }
-
-    @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
-        return null;
     }
 
     @Override
@@ -44,7 +39,7 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
     }
 
     @Override
-    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+    public void onStateReplaced(BlockState state, ServerLevel world, BlockPos pos, boolean moved) {
         BlockState newState = world.getBlockState(pos);
         if (state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -56,9 +51,21 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
         }
     }
 
+
+
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         return validateTicker(type, ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY,
                 (world1, pos, state1, blockEntity) -> blockEntity.tick(world1, pos, state1));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return null;
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+        return null;
     }
 }

@@ -1,7 +1,9 @@
 package cz.lukesmith.automaticsorter.block;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
+import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
+import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
 import cz.lukesmith.automaticsorter.item.ModItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -25,6 +27,16 @@ public class ModBlocks {
             () -> new PipeBlock(BlockBehaviour.Properties.of()
                     .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "pipe")))
                     .strength(1.0f, 2.0f).noOcclusion()));
+
+    public static final RegistryObject<Block> SORTER_CONTROLLER_BLOCK = registerBlock("sorter_controller",
+            () -> new SorterControllerBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "sorter_controller")))
+                    .strength(3.0f, 6.0f).noOcclusion()));
+
+    public static final RegistryObject<Block> FILTER_BLOCK = registerBlock("filter",
+            () -> new FilterBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "filter")))
+                    .strength(3.0f, 6.0f).noOcclusion()));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);

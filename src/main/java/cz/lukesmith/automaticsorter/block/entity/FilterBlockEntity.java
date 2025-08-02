@@ -1,44 +1,51 @@
 package cz.lukesmith.automaticsorter.block.entity;
 
-import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
-public class FilterBlockEntity extends BlockEntity implements ImplementedInventory, ExtendedScreenHandlerFactory<BlockPos> {
+import javax.annotation.Nullable;
 
-    private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(24, ItemStack.EMPTY);
+public class FilterBlockEntity extends BlockEntity implements ImplementedInventory, MenuProvider {
+
+    private final NonNullList<ItemStack> inventory = NonNullList.withSize(24, ItemStack.EMPTY);
 
     private int filterType = FilterTypeEnum.IN_INVENTORY.getValue();
 
     public FilterBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FILTER_BLOCK_ENTITY, pos, state);
-    }
-
-    public DefaultedList<ItemStack> getItems() {
-        return inventory;
+        super(ModBlockEntities.FILTER_BLOCK_ENTITY.get(), pos, state);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        Inventories.writeNbt(nbt, inventory, registryLookup);
-        nbt.putInt("FilterType", filterType);
+    public NonNullList<ItemStack> getItems() {
+        return null;
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
-        Inventories.readNbt(nbt, inventory, registryLookup);
-        filterType = nbt.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
+    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
+        super.loadAdditional(pTag, pRegistries);
+        ContainerHelper.loadAllItems(pTag, inventory, pRegistries);
+        filterType = pTag.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
     }
 
     @Override
-    public BlockPos getScreenOpeningData(ServerPlayerEntity player) {
-        return this.pos;
+    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
+        super.saveAdditional(pTag, pRegistries);
+        ContainerHelper.saveAllItems(pTag, inventory, pRegistries);
+        pTag.putInt("FilterType", filterType);
     }
 
     public static FilterBlockEntity create(BlockPos pos, BlockState state) {
@@ -46,13 +53,61 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     }
 
     @Override
-    public Text getDisplayName() {
-        return Text.translatable(AutomaticSorter.MOD_ID + ".filter_block_entity");
+    public Component getDisplayName() {
+        return null;
+    }
+
+    public int getFilterType() {
+        return filterType;
     }
 
     @Override
-    public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return new FilterScreenHandler(syncId, playerInventory, this, new PropertyDelegate() {
+    public void setChanged() {
+        super.setChanged();
+        if (level != null) {
+            level.setBlock(getBlockPos(), getBlockState(), Block.UPDATE_ALL);
+        }
+    }
+
+    public void setFilterType(int filterType) {
+        this.filterType = filterType;
+        this.setChanged();
+    }
+
+    @Override
+    public ItemStack getItem(int pSlot) {
+        return null;
+    }
+
+    @Override
+    public ItemStack removeItem(int pSlot, int pAmount) {
+        return null;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int pSlot) {
+        return null;
+    }
+
+    @Override
+    public void setItem(int pSlot, ItemStack pStack) {
+
+    }
+
+    @Override
+    public boolean stillValid(Player pPlayer) {
+        return false;
+    }
+
+    @Override
+    public void clearContent() {
+
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return new FilterScreenHandler(pContainerId, pPlayerInventory, this, new ContainerData() {
             @Override
             public int get(int index) {
                 if (index == 0) {
@@ -69,33 +124,10 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
             }
 
             @Override
-            public int size() {
+            public int getCount() {
                 return 1;
             }
         });
-    }
-
-    public void tick(World world, BlockPos pos, BlockState state) {
-        if (world.isClient) {
-            // Tick metoda se neprovádí na klientské straně
-        }
-    }
-
-    public int getFilterType() {
-        return filterType;
-    }
-
-    @Override
-    public void markDirty() {
-        super.markDirty();
-        if (world != null) {
-            world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_ALL);
-        }
-    }
-
-    public void setFilterType(int filterType) {
-        this.filterType = filterType;
-        this.markDirty();
     }
 
     public enum FilterTypeEnum {
@@ -144,7 +176,6 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         }
     }
 
-    @Override
     public int getMaxCountPerStack() {
         return 1;
     }

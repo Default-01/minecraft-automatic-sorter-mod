@@ -5,47 +5,28 @@ import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.*;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class SorterControllerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, ImplementedInventory {
+public class SorterControllerBlockEntity extends BlockEntity {
 
     private int ticker = 0;
     private static final int MAX_TICKER = 5;
 
     public SorterControllerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY, pos, state);
+        super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY.get(), pos, state);
     }
 
     public static SorterControllerBlockEntity create(BlockPos pos, BlockState state) {
         return new SorterControllerBlockEntity(pos, state);
-    }
-
-    @Override
-    public DefaultedList<ItemStack> getItems() {
-        return DefaultedList.ofSize(1, ItemStack.EMPTY);
-    }
-
-    @Override
-    public BlockPos getScreenOpeningData(ServerPlayerEntity serverPlayerEntity) {
-        return this.pos;
-    }
-
-    @Override
-    public Text getDisplayName() {
-        return null;
-    }
-
-    @Override
-    public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return null;
     }
 
     private static boolean tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter) {
@@ -120,9 +101,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         return false;
     }
 
-    private static boolean tryToTransferItem(World world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
-        Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
-        BlockPos chestPos = filterPos.offset(filterDirection);
+    private static boolean tryToTransferItem(Level world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
+        Direction filterDirection = world.getBlockState(filterPos).getValue(FilterBlock.FACING);
+        Vec3i filterOffset = filterDirection.getUnitVec3i();
+        BlockPos chestPos = filterPos.offset(filterOffset);
         IInventoryAdapter chestInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, chestPos);
         if (chestInventoryAdapter instanceof NoInventoryAdapter) {
             return false;
@@ -141,8 +123,8 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
     }
 
-    public void tick(World world, BlockPos pos, BlockState state) {
-        if (world.isClient) {
+    public void tick(Level world, BlockPos pos, BlockState state) {
+        if (world.isClientSide) {
             return;
         }
 
@@ -152,13 +134,13 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         }
 
         Set<BlockPos> visited = new HashSet<>();
-        BlockPos belowPos = pos.down();
+        BlockPos belowPos = pos.below();
 
         if ((world.getBlockState(belowPos).getBlock() instanceof PipeBlock)) {
             Queue<BlockPos> queue = new LinkedList<>();
             queue.add(belowPos);
 
-            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.up());
+            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.above());
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
             boolean itemTransfered = false;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
@@ -171,14 +153,15 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
                 visited.add(currentPos);
                 for (Direction direction : Direction.values()) {
-                    BlockPos neighborPos = currentPos.offset(direction);
+                    Vec3i offsetDirection = direction.getUnitVec3i();
+                    BlockPos neighborPos = currentPos.offset(offsetDirection);
                     Block block = world.getBlockState(neighborPos).getBlock();
                     if (block instanceof PipeBlock) {
                         queue.add(neighborPos);
                     } else if (block instanceof FilterBlock) {
                         BlockEntity filterEntity = world.getBlockEntity(neighborPos);
                         if (filterEntity instanceof FilterBlockEntity filterBlockEntity) {
-                            Direction filterFacing = world.getBlockState(neighborPos).get(FilterBlock.FACING);
+                            Direction filterFacing = world.getBlockEntity(neighborPos).get(FilterBlock.FACING);
                             if (direction != filterFacing) {
                                 continue;
                             }
@@ -199,7 +182,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
             if (!itemTransfered) {
                 for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                    if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter)) {
+                    if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getBlockPos(), rootInventoryAdapter)) {
                         break;
                     }
                 }
@@ -207,5 +190,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         }
 
         ticker = MAX_TICKER;
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookup) {
+        super.onDataPacket(connection, pkt, lookup);
     }
 }

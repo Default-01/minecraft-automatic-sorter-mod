@@ -3,93 +3,108 @@ package cz.lukesmith.automaticsorter.block.custom;
 import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.gameevent.GameEventListener;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 
-public class FilterBlock extends BlockWithEntity implements BlockEntityProvider {
+import javax.swing.text.html.BlockView;
+import java.util.List;
 
-    public static final EnumProperty<Direction> FACING;
-    public static final MapCodec<FilterBlock> CODEC = createCodec(FilterBlock::new);
+public class FilterBlock extends BaseEntityBlock {
 
-    static {
-        FACING = FacingBlock.FACING;
-    }
+    public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
+    public static final MapCodec<FilterBlock> CODEC = simpleCodec(FilterBlock::new);
 
-    public FilterBlock(Settings settings) {
+    public FilterBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.UP));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.UP));
     }
+
+    protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        return super.getShape(pState, pLevel, pPos, pContext);
+    }
+
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        Vec3d[][] shapes = getShapesForFacing(state.get(FACING));
+    protected List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
+        return super.getDrops(pState, pParams);
+    }
 
-        VoxelShape shape = VoxelShapes.empty();
-        for (Vec3d[] shapePart : shapes) {
-            shapePart[0] = shapePart[0].multiply(1 / 16.0);
-            shapePart[1] = shapePart[1].multiply(1 / 16.0);
-            shape = VoxelShapes.union(shape, VoxelShapes.cuboid(shapePart[0].getX(), shapePart[0].getY(), shapePart[0].getZ(), shapePart[1].getX(), shapePart[1].getY(), shapePart[1].getZ()));
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, CollisionContext context) {
+        Vec3[][] shapes = getShapesForFacing(state.getValue(FACING));
+
+        VoxelShape shape = Shapes.empty();
+        for (Vec3[] shapePart : shapes) {
+            shapePart[0] = shapePart[0].scale(1 / 16.0);
+            shapePart[1] = shapePart[1].scale(1 / 16.0);
+            shape = Shapes.join(shape, Shapes.box(shapePart[0].get(Direction.Axis.X), shapePart[0].get(Direction.Axis.Y), shapePart[0].get(Direction.Axis.Z), shapePart[1].get(Direction.Axis.X), shapePart[1].get(Direction.Axis.Y), shapePart[1].get(Direction.Axis.Z)), BooleanOp.AND);
         }
 
         return shape;
     }
 
-    private Vec3d[][] getShapesForFacing(Direction facing) {
-        Vec3d[][] shapes = new Vec3d[][]{
-                {new Vec3d(6, 0, 6), new Vec3d(10, 9, 10)},
-                {new Vec3d(3, 9, 3), new Vec3d(13, 13, 13)},
-                {new Vec3d(2, 13, 2), new Vec3d(14, 16, 14)}
+    private Vec3[][] getShapesForFacing(Direction facing) {
+        Vec3[][] shapes = new Vec3[][]{
+                {new Vec3(6, 0, 6), new Vec3(10, 9, 10)},
+                {new Vec3(3, 9, 3), new Vec3(13, 13, 13)},
+                {new Vec3(2, 13, 2), new Vec3(14, 16, 14)}
         };
 
         switch (facing) {
             case DOWN:
-                shapes[0] = new Vec3d[]{new Vec3d(6, 7, 6), new Vec3d(10, 16, 10)};
-                shapes[1] = new Vec3d[]{new Vec3d(3, 3, 3), new Vec3d(13, 7, 13)};
-                shapes[2] = new Vec3d[]{new Vec3d(2, 0, 2), new Vec3d(14, 3, 14)};
+                shapes[0] = new Vec3[]{new Vec3(6, 7, 6), new Vec3(10, 16, 10)};
+                shapes[1] = new Vec3[]{new Vec3(3, 3, 3), new Vec3(13, 7, 13)};
+                shapes[2] = new Vec3[]{new Vec3(2, 0, 2), new Vec3(14, 3, 14)};
                 break;
             case NORTH:
-                shapes[0] = new Vec3d[]{new Vec3d(6, 6, 7), new Vec3d(10, 10, 16)};
-                shapes[1] = new Vec3d[]{new Vec3d(3, 3, 3), new Vec3d(13, 13, 7)};
-                shapes[2] = new Vec3d[]{new Vec3d(2, 2, 0), new Vec3d(14, 14, 3)};
+                shapes[0] = new Vec3[]{new Vec3(6, 6, 7), new Vec3(10, 10, 16)};
+                shapes[1] = new Vec3[]{new Vec3(3, 3, 3), new Vec3(13, 13, 7)};
+                shapes[2] = new Vec3[]{new Vec3(2, 2, 0), new Vec3(14, 14, 3)};
                 break;
             case SOUTH:
-                shapes[0] = new Vec3d[]{new Vec3d(6, 6, 0), new Vec3d(10, 10, 9)};
-                shapes[1] = new Vec3d[]{new Vec3d(3, 3, 9), new Vec3d(13, 13, 13)};
-                shapes[2] = new Vec3d[]{new Vec3d(2, 2, 13), new Vec3d(14, 14, 16)};
+                shapes[0] = new Vec3[]{new Vec3(6, 6, 0), new Vec3(10, 10, 9)};
+                shapes[1] = new Vec3[]{new Vec3(3, 3, 9), new Vec3(13, 13, 13)};
+                shapes[2] = new Vec3[]{new Vec3(2, 2, 13), new Vec3(14, 14, 16)};
                 break;
             case WEST:
-                shapes[0] = new Vec3d[]{new Vec3d(7, 6, 6), new Vec3d(16, 10, 10)};
-                shapes[1] = new Vec3d[]{new Vec3d(3, 3, 3), new Vec3d(7, 13, 13)};
-                shapes[2] = new Vec3d[]{new Vec3d(0, 2, 2), new Vec3d(3, 14, 14)};
+                shapes[0] = new Vec3[]{new Vec3(7, 6, 6), new Vec3(16, 10, 10)};
+                shapes[1] = new Vec3[]{new Vec3(3, 3, 3), new Vec3(7, 13, 13)};
+                shapes[2] = new Vec3[]{new Vec3(0, 2, 2), new Vec3(3, 14, 14)};
                 break;
             case EAST:
-                shapes[0] = new Vec3d[]{new Vec3d(0, 6, 6), new Vec3d(9, 10, 10)};
-                shapes[1] = new Vec3d[]{new Vec3d(9, 3, 3), new Vec3d(13, 13, 13)};
-                shapes[2] = new Vec3d[]{new Vec3d(13, 2, 2), new Vec3d(16, 14, 14)};
+                shapes[0] = new Vec3[]{new Vec3(0, 6, 6), new Vec3(9, 10, 10)};
+                shapes[1] = new Vec3[]{new Vec3(9, 3, 3), new Vec3(13, 13, 13)};
+                shapes[2] = new Vec3[]{new Vec3(13, 2, 2), new Vec3(16, 14, 14)};
                 break;
         }
 
@@ -97,54 +112,94 @@ public class FilterBlock extends BlockWithEntity implements BlockEntityProvider 
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    protected RenderShape getRenderShape(BlockState pState) {
+        return RenderShape.MODEL;
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return new FilterBlockEntity(pos, state);
+    public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+        return new FilterBlockEntity(pPos, pState);
     }
 
     @Override
-    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-        BlockState newState = world.getBlockState(pos);
-        if (state.getBlock() != newState.getBlock()) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof FilterBlockEntity) {
-                ItemScatterer.spawn(world, pos, (FilterBlockEntity) blockEntity);
-                world.updateComparators(pos, this);
-            }
-            super.onStateReplaced(state, world, pos, moved);
-        }
+    public @Nullable <T extends BlockEntity> GameEventListener getListener(ServerLevel pLevel, T pBlockEntity) {
+        return super.getListener(pLevel, pBlockEntity);
     }
 
-    @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            NamedScreenHandlerFactory screenHandlerFactory = ((FilterBlockEntity) world.getBlockEntity(pos));
+    protected InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!world.isClientSide) {
+            MenuProvider screenHandlerFactory = ((FilterBlockEntity) world.getBlockEntity(pos));
 
             if (screenHandlerFactory != null) {
-                player.openHandledScreen(screenHandlerFactory);
+                player.openMenu(screenHandlerFactory);
             }
         }
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return createTickerHelper(type, ModBlockEntities.FILTER_BLOCK_ENTITY,
+                (lvl, pos, blockState, blockEntity) -> blockEntity.tick(lvl, pos, blockState));
+    }
+
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
+        if(pLevel.isClientSide()) {
+            return null;
+        }
+
+        return createTickerHelper(pBlockEntityType, ModBlockEntities.FILTER_BLOCK_ENTITY.get(),
+                (level, blockPos, blockState, growthChamberBlockEntity) -> blockEntity.tick(level, blockPos, blockState));
+    }
+
+    /*@Override
+    public void onRemove(BlockState oldState, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+        if (!oldState.is(newState.getBlock())) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof FilterBlockEntity) {
+                Containers.dropContents(world, pos, (FilterBlockEntity) be);
+                world.updateNeighbourForOutputSignal(pos, this);
+            }
+            super.onRemove(oldState, world, pos, newState, isMoving);
+        }
+    }
+
+
+
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return validateTicker(type, ModBlockEntities.FILTER_BLOCK_ENTITY,
                 (world1, pos, state1, blockEntity) -> blockEntity.tick(world1, pos, state1));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-    }
-
-    @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getSide().getOpposite());
-    }
+    public boolean isEnabled(FeatureFlagSet pEnabledFeatures) {
+        return super.isEnabled(pEnabledFeatures);
+    }*/
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
