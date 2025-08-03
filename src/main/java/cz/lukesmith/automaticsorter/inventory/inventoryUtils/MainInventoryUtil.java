@@ -24,7 +24,7 @@ public class MainInventoryUtil {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (block instanceof ChestBlock chestBlock) {
             return new InventoryAdapter(ChestBlock.getContainer(chestBlock, world.getBlockState(pos), world, pos, true));
-        } else if (blockEntity instanceof Inventory inventory) {
+        } else if (blockEntity instanceof Container inventory) {
             if (expandedIU.isRelatedStorage(block, blockEntity)) {
                 return expandedIU.getInventoryAdapter(world, pos, block, blockEntity);
             } else {

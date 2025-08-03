@@ -1,15 +1,15 @@
 package cz.lukesmith.automaticsorter.inventory.inventoryAdapters;
 
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 
 public class InventoryAdapter implements IInventoryAdapter {
 
-    private final Inventory inventory;
+    private final Container inventory;
 
-    public InventoryAdapter(Inventory inventory) {
+    public InventoryAdapter(Container inventory) {
         this.inventory = inventory;
     }
 

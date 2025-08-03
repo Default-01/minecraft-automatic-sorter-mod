@@ -161,7 +161,7 @@ public class SorterControllerBlockEntity extends BlockEntity {
                     } else if (block instanceof FilterBlock) {
                         BlockEntity filterEntity = world.getBlockEntity(neighborPos);
                         if (filterEntity instanceof FilterBlockEntity filterBlockEntity) {
-                            Direction filterFacing = world.getBlockEntity(neighborPos).get(FilterBlock.FACING);
+                            Direction filterFacing = world.getBlockState(neighborPos).getValue(FilterBlock.FACING);
                             if (direction != filterFacing) {
                                 continue;
                             }

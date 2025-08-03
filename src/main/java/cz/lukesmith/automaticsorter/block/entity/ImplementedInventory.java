@@ -16,12 +16,7 @@ public interface ImplementedInventory extends Container {
      */
     NonNullList<ItemStack> getItems();
 
-    /**
-     * Creates an inventory from the item list.
-     *
-     * @param items the item list
-     * @return a new inventory
-     */
+
     static ImplementedInventory of(NonNullList<ItemStack> items) {
         return () -> items;
     }

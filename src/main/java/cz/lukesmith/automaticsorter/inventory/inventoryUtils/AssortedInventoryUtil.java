@@ -6,6 +6,7 @@ import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapt
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -18,7 +19,7 @@ public class AssortedInventoryUtil implements IInventoryUtil {
     private static final String MAIN_CLASSNANE = "com.grim3212.assorted.storage.common.block.blockentity.BaseStorageBlockEntity";
     public static final String STORAGE_HANDLER_CLASSNAME = "com.grim3212.assorted.lib.core.inventory.impl.ItemStackStorageHandler";
 
-    public IInventoryAdapter getInventoryAdapter(World world, BlockPos pos, Block block, BlockEntity blockEntity) {
+    public IInventoryAdapter getInventoryAdapter(Level world, BlockPos pos, Block block, BlockEntity blockEntity) {
         try {
             Class<?> itemStackStorageHandlerClass = Class.forName(STORAGE_HANDLER_CLASSNAME);
             Object itemStackStorageHandler = getAssortedStorageItemStackStorageHandler(blockEntity);

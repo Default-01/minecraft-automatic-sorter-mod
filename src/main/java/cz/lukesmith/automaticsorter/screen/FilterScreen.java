@@ -5,84 +5,89 @@ import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.network.FilterTypePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 
-public class FilterScreen extends HandledScreen<FilterScreenHandler> {
+public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
-    private static final Identifier TEXTURE = Identifier.of(AutomaticSorter.MOD_ID, "textures/gui/filter.png");
-    private ButtonWidget receiveItemsButton;
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "textures/gui/filter.png");
+    private Button receiveItemsButton;
     private static final ItemStack CHEST_BLOCK = new ItemStack(Blocks.CHEST);
-    private static final ItemStack FILTER_BLOCK = new ItemStack(ModBlocks.FILTER_BLOCK);
+    private static final ItemStack FILTER_BLOCK = new ItemStack(ModBlocks.FILTER_BLOCK.get());
     private static final ItemStack REJECTS = new ItemStack(Blocks.BARRIER);
 
 
-    public FilterScreen(FilterScreenHandler handler, PlayerInventory inventory, Text title) {
-        super(handler, inventory, title);
+    public FilterScreen(FilterScreenHandler handler, Inventory inv, Component title) {
+        super(handler, inv, title);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+        int x = (width - imageWidth) / 2;
+        int y = (height - imageHeight) / 2;
+        pGuiGraphics.blit(RenderType::guiTextured, TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
+    }
+
+    private Component getButtonText() {
+        return Component.literal(FilterBlockEntity.FilterTypeEnum.getName(menu.getFilterType()));
     }
 
     @Override
     protected void init() {
         super.init();
-        titleY = 1000;
-        playerInventoryTitleY = 1000;
+        inventoryLabelY = 1000;
+        titleLabelY = 1000;
 
-        receiveItemsButton = ButtonWidget.builder(Text.of(""), button -> {
-            int value = handler.toggleFilterType();
-            BlockPos blockPos = handler.getBlockPos();
+        receiveItemsButton = new Button.Builder(Component.literal(""), button -> {
+            int value = menu.toggleFilterType();
+            BlockPos blockPos = menu.getBlockPos();
             FilterTypePayload payload = new FilterTypePayload(blockPos, value);
             ClientPlayNetworking.send(payload);
-        }).dimensions(this.x + 6, this.y + 14, 18, 18).build();
+        }).pos(this.leftPos + 6, this.topPos + 14).size(18, 18).build();
 
-        this.addDrawableChild(receiveItemsButton);
-    }
-
-    private Text getButtonText() {
-        return Text.of(FilterBlockEntity.FilterTypeEnum.getName(handler.getFilterType()));
+        this.addRenderableWidget(receiveItemsButton);
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int x = (width - backgroundWidth) / 2;
-        int y = (height - backgroundHeight) / 2;
-        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE, x, y, 0f, 0f, backgroundWidth, backgroundHeight, 256, 256);
-    }
-
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
-        drawMouseoverTooltip(context, mouseX, mouseY);
+        renderTooltip(context, mouseX, mouseY);
 
-        if (receiveItemsButton.isMouseOver(mouseX, mouseY)) {
+        if (this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             context.drawTooltip(textRenderer, getButtonText(), mouseX, mouseY);
         }
 
-        if (!receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            receiveItemsButton.setFocused(false);
+        if (!this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
+            this.receiveItemsButton.setFocused(false);
         }
 
-        int filterType = handler.getFilterType();
+        int filterType = menu.getFilterType();
         ItemStack renderButtonBlock = getDisplayedItemStack();
-        context.drawItem(renderButtonBlock, this.x + 7, this.y + 15);
+        context.renderItem(renderButtonBlock, this.leftPos + 7, this.topPos + 15);
 
         switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
             case REJECTS:
             case IN_INVENTORY:
-                int x = this.x + 25;
-                int y = this.y + 14;
+                int x = this.leftPos + 25;
+                int y = this.topPos + 14;
                 int width = 8 * 18;
                 int height = 3 * 18;
                 int color = 0x80000000;
@@ -94,7 +99,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
     }
 
     private ItemStack getDisplayedItemStack() {
-        int filterType = handler.getFilterType();
+        int filterType = menu.getFilterType();
         if (filterType == FilterBlockEntity.FilterTypeEnum.WHITELIST.getValue()) {
             return FILTER_BLOCK;
         } else if (filterType == FilterBlockEntity.FilterTypeEnum.IN_INVENTORY.getValue()) {

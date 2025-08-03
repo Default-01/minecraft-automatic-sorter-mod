@@ -2,7 +2,6 @@ package cz.lukesmith.automaticsorter.block.custom;
 
 import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
-import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -11,12 +10,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -149,18 +147,8 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return createTickerHelper(type, ModBlockEntities.FILTER_BLOCK_ENTITY,
-                (lvl, pos, blockState, blockEntity) -> blockEntity.tick(lvl, pos, blockState));
-    }
-
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        if(pLevel.isClientSide()) {
-            return null;
-        }
-
-        return createTickerHelper(pBlockEntityType, ModBlockEntities.FILTER_BLOCK_ENTITY.get(),
-                (level, blockPos, blockState, growthChamberBlockEntity) -> blockEntity.tick(level, blockPos, blockState));
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        super.onBlockStateChange(level, pos, oldState, newState);
     }
 
     /*@Override
@@ -173,20 +161,6 @@ public class FilterBlock extends BaseEntityBlock {
             }
             super.onRemove(oldState, world, pos, newState, isMoving);
         }
-    }
-
-
-
-
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return validateTicker(type, ModBlockEntities.FILTER_BLOCK_ENTITY,
-                (world1, pos, state1, blockEntity) -> blockEntity.tick(world1, pos, state1));
-    }
-
-    @Override
-    public boolean isEnabled(FeatureFlagSet pEnabledFeatures) {
-        return super.isEnabled(pEnabledFeatures);
     }*/
 }
 

@@ -6,7 +6,10 @@ import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.MultiInventoryAd
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,7 +23,7 @@ public class ExpandedInventoryUtil implements IInventoryUtil {
     private static final String MAIN_CLASSNAME = "dev.compasses.expandedstorage.block.AbstractChestBlock";
     private static final String CHEST_BLOCK_ENTITY_CLASSNAME = "dev.compasses.expandedstorage.block.entity.ChestBlockEntity";
 
-    public IInventoryAdapter getInventoryAdapter(World world, BlockPos pos, Block block, BlockEntity blockEntity) {
+    public IInventoryAdapter getInventoryAdapter(Level world, BlockPos pos, Block block, BlockEntity blockEntity) {
         try {
             Class<?> chestBlockClass = Class.forName(MAIN_CLASSNAME);
             if (chestBlockClass.isInstance(block)) {
@@ -29,9 +32,10 @@ public class ExpandedInventoryUtil implements IInventoryUtil {
                     Object chestBlock = chestBlockClass.cast(block);
                     Method getContainerMethod = chestBlockClass.getMethod("getDirectionToAttached", BlockState.class);
                     Direction direction = (Direction) getContainerMethod.invoke(chestBlock, world.getBlockState(pos));
-                    BlockPos secondPos = pos.offset(direction);
+                    Vec3i directionVec = direction.getUnitVec3i();
+                    BlockPos secondPos = pos.offset(directionVec);
                     BlockEntity secondBlockEntity = world.getBlockEntity(secondPos);
-                    Direction facing = world.getBlockState(pos).get(ChestBlock.FACING);
+                    Direction facing = world.getBlockState(pos).getValue(ChestBlock.FACING);
                     InventoryAdapter secondInventoryAdapter = new InventoryAdapter(getExpandedStorageInventory(secondBlockEntity));
                     if ((facing == Direction.EAST && direction == Direction.SOUTH)
                             || (facing == Direction.SOUTH && direction == Direction.WEST)
@@ -69,13 +73,13 @@ public class ExpandedInventoryUtil implements IInventoryUtil {
         return false;
     }
 
-    private static Inventory getExpandedStorageInventory(BlockEntity blockEntity) {
+    private static Container getExpandedStorageInventory(BlockEntity blockEntity) {
         try {
             Class<?> chestBlockEntityClass = Class.forName(CHEST_BLOCK_ENTITY_CLASSNAME);
             if (chestBlockEntityClass.isInstance(blockEntity)) {
                 Object chestBlockEntity = chestBlockEntityClass.cast(blockEntity);
                 Method getInventory = chestBlockEntityClass.getMethod("getInventory");
-                if (getInventory.invoke(chestBlockEntity) instanceof Inventory inventory) {
+                if (getInventory.invoke(chestBlockEntity) instanceof Container inventory) {
                     return inventory;
                 }
             }
