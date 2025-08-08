@@ -2,11 +2,10 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -16,35 +15,69 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
-public class FilterBlockEntity extends BlockEntity implements ImplementedInventory, MenuProvider {
+public class FilterBlockEntity extends BlockEntity implements MenuProvider {
 
-    private final NonNullList<ItemStack> inventory = NonNullList.withSize(24, ItemStack.EMPTY);
+    public final ItemStackHandler inventory = new ItemStackHandler(24) {
+        @Override
+        protected int getStackLimit(int slot, @NotNull ItemStack stack) {
+            return 24;
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+            if (!level.isClientSide()) {
+                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            }
+        }
+    };
+
+    private final LazyOptional<IItemHandler> inventoryCap = LazyOptional.of(() -> inventory);
 
     private int filterType = FilterTypeEnum.IN_INVENTORY.getValue();
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+            return inventoryCap.cast(); // vrátí inventář
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        inventoryCap.invalidate(); // nutné pro uvolnění paměti při zničení bloku
+    }
+
+    public ItemStackHandler getInventory() {
+        return inventory;
+    }
 
     public FilterBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FILTER_BLOCK_ENTITY.get(), pos, state);
     }
 
     @Override
-    public NonNullList<ItemStack> getItems() {
-        return null;
-    }
-
-    @Override
     protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
         super.loadAdditional(pTag, pRegistries);
-        ContainerHelper.loadAllItems(pTag, inventory, pRegistries);
+        inventory.deserializeNBT(pRegistries, pTag.getCompound("FilterInventory").orElse(new CompoundTag()));
         filterType = pTag.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
     }
 
     @Override
     protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
         super.saveAdditional(pTag, pRegistries);
-        ContainerHelper.saveAllItems(pTag, inventory, pRegistries);
+        pTag.put("FilterInventory", inventory.serializeNBT(pRegistries));
         pTag.putInt("FilterType", filterType);
     }
 
@@ -72,36 +105,6 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     public void setFilterType(int filterType) {
         this.filterType = filterType;
         this.setChanged();
-    }
-
-    @Override
-    public ItemStack getItem(int pSlot) {
-        return null;
-    }
-
-    @Override
-    public ItemStack removeItem(int pSlot, int pAmount) {
-        return null;
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int pSlot) {
-        return null;
-    }
-
-    @Override
-    public void setItem(int pSlot, ItemStack pStack) {
-
-    }
-
-    @Override
-    public boolean stillValid(Player pPlayer) {
-        return false;
-    }
-
-    @Override
-    public void clearContent() {
-
     }
 
     @Nullable
@@ -176,7 +179,4 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         }
     }
 
-    public int getMaxCountPerStack() {
-        return 1;
-    }
 }

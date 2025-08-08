@@ -1,73 +1,107 @@
 package cz.lukesmith.automaticsorter.screen;
 
+import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.SimpleContainerData;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class FilterScreenHandler extends AbstractContainerMenu {
 
-    private final Container inventory;
-    public final FilterBlockEntity blockEntity;
+    private final FilterBlockEntity blockEntity;
+    private final Level level;
     private final ContainerData propertyDelegate;
-    private final int inventorySize = 24;
 
+    private static final int HOTBAR_SLOT_COUNT = 9;
+    private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
+    private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
+    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
+    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
+    private static final int VANILLA_FIRST_SLOT_INDEX = 0;
+    private static final int FILTER_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+    private static final int FILTER_INVENTORY_SLOT_COUNT = 24;
 
-    public FilterScreenHandler(int syncId, Inventory inventory, BlockPos pos) {
-        this(syncId, inventory, inventory.player.level().getBlockEntity(pos), new SimpleContainerData(1));
+    public FilterScreenHandler(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
+        this(containerId, playerInventory, playerInventory.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(1));
     }
 
-    public FilterScreenHandler(int syncId, Container playerInventory, BlockEntity blockEntity, ContainerData propertyDelegate) {
-        super(ModScreenHandlers.FILTER_SCREEN_HANDLER.get(), syncId);
-        checkContainerSize((Container) blockEntity, inventorySize);
-        this.inventory = ((Container) blockEntity);
-        inventory.startOpen(playerInventory.player);
-        this.blockEntity = ((FilterBlockEntity) blockEntity);
-        this.propertyDelegate = propertyDelegate;
+    public FilterScreenHandler(int containerId, Inventory playerInventory, BlockEntity be, ContainerData data) {
+        super(ModScreenHandlers.FILTER_SCREEN_HANDLER.get(), containerId);
 
-        // Pridat sloty
+        if (!(be instanceof FilterBlockEntity filterBe))
+            throw new IllegalStateException("Invalid block entity at container open");
+
+        this.blockEntity = filterBe;
+        this.level = playerInventory.player.level();
+        this.propertyDelegate = data;
+
+        // Přidej sloty z block entity
+        ItemStackHandler inventory = blockEntity.getInventory(); // přístup k ItemStackHandler
+
+        // Příklad – 3 řádky po 8 slotech = 24 slotů
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 8; j++) {
-                this.addSlot(new Slot(this.inventory, j + i * 8, 26 + j * 18, 15 + i * 18));
+                int slot = j + i * 8;
+                int x = 26 + j * 18;
+                int y = 15 + i * 18;
+                this.addSlot(new SlotItemHandler(inventory, slot, x, y));
             }
         }
 
+        // Přidej hráčský inventář
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
 
-        addDataSlots(propertyDelegate);
+        this.addDataSlots(data);
     }
 
-
-    public @NotNull ItemStack quickMoveStack(Player player, int slot) {
-        Slot sourceSlot = this.slots.get(slot);
-        if (sourceSlot == null || !sourceSlot.hasItem()) {
-            return ItemStack.EMPTY;
+    private void addPlayerInventory(Inventory playerInventory) {
+        for (int row = 0; row < 3; ++row) {
+            for (int col = 0; col < 9; ++col) {
+                this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+            }
         }
+    }
+
+    private void addPlayerHotbar(Inventory playerInventory) {
+        for (int i = 0; i < 9; ++i) {
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
+        }
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, ModBlocks.FILTER_BLOCK.get());
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        Slot sourceSlot = this.slots.get(index);
+        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
 
         ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack singleItemStack = sourceStack.copy();
-        singleItemStack.setCount(1);
+        ItemStack copy = sourceStack.copy();
 
-        if (slot < 24) {
-            if (!this.insertItem(singleItemStack, inventorySize, this.slots.size(), true)) {
+        if (index < VANILLA_SLOT_COUNT) {
+            // Z hráče do blockEntity
+            if (!moveItemStackTo(sourceStack, FILTER_INVENTORY_FIRST_SLOT_INDEX, FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT, false)) {
+                return ItemStack.EMPTY;
+            }
+        } else if (index < FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT) {
+            // Z blockEntity do hráče
+            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
         } else {
-            if (!this.insertItem(singleItemStack, 0, inventorySize, false)) {
-                return ItemStack.EMPTY;
-            }
+            return ItemStack.EMPTY;
         }
-
-        sourceStack.decrement(1);
 
         if (sourceStack.isEmpty()) {
             sourceSlot.set(ItemStack.EMPTY);
@@ -75,31 +109,8 @@ public class FilterScreenHandler extends AbstractContainerMenu {
             sourceSlot.setChanged();
         }
 
-        return singleItemStack;
-    }
-
-    @Override
-    public boolean stillValid(Player pPlayer) {
-        return false;
-    }
-
-    @Override
-    public boolean canUse(Player player) {
-        return this.inventory.stillValid(player);
-    }
-
-    private void addPlayerInventory(Container playerInventory) {
-        for (int i = 0; i < 3; ++i) {
-            for (int l = 0; l < 9; ++l) {
-                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Container playerInventory) {
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
-        }
+        sourceSlot.onTake(player, sourceStack);
+        return copy;
     }
 
     public int getFilterType() {

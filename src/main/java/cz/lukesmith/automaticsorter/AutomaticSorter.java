@@ -3,6 +3,7 @@ package cz.lukesmith.automaticsorter;
 import com.mojang.logging.LogUtils;
 import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
+import cz.lukesmith.automaticsorter.network.NetworkHandler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -40,6 +41,8 @@ public class AutomaticSorter {
         modEventBus.addListener(this::addCreative);
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        NetworkHandler.register();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

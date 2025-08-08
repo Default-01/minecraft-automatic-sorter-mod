@@ -1,28 +1,24 @@
 package cz.lukesmith.automaticsorter.screen;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
-import cz.lukesmith.automaticsorter.network.FilterTypePayload;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import cz.lukesmith.automaticsorter.network.FilterTypePacket;
+import cz.lukesmith.automaticsorter.network.NetworkHandler;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import org.apache.logging.log4j.core.pattern.TextRenderer;
 
 public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
@@ -57,8 +53,8 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         receiveItemsButton = new Button.Builder(Component.literal(""), button -> {
             int value = menu.toggleFilterType();
             BlockPos blockPos = menu.getBlockPos();
-            FilterTypePayload payload = new FilterTypePayload(blockPos, value);
-            ClientPlayNetworking.send(payload);
+            FilterTypePacket payload = new FilterTypePacket(blockPos, value);
+            NetworkHandler.CHANNEL.sendToServer(payload);
         }).pos(this.leftPos + 6, this.topPos + 14).size(18, 18).build();
 
         this.addRenderableWidget(receiveItemsButton);
@@ -71,8 +67,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         renderTooltip(context, mouseX, mouseY);
 
         if (this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            context.drawTooltip(textRenderer, getButtonText(), mouseX, mouseY);
+            context.renderTooltip(getFont(), getButtonText(), mouseX, mouseY);
         }
 
         if (!this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
