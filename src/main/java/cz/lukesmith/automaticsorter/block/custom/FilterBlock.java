@@ -124,7 +124,8 @@ public class FilterBlock extends BaseEntityBlock {
         return super.getListener(pLevel, pBlockEntity);
     }
 
-    protected InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         if (!world.isClientSide) {
             MenuProvider screenHandlerFactory = ((FilterBlockEntity) world.getBlockEntity(pos));
 
@@ -143,7 +144,7 @@ public class FilterBlock extends BaseEntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
     }
 
     @Override

@@ -43,11 +43,11 @@ public class InventoryAdapter implements IInventoryAdapter {
             ItemStack stack = inventory.getItem(i);
             if (this.canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxStackSize()) {
                 stack.grow(1);
-                inventory.createInventoryUpdatePacket(i);
+                inventory.removeItemNoUpdate(i);
                 return true;
             } else if (stack.isEmpty()) {
                 inventory.setItem(i, tranferStack);
-                inventory.createInventoryUpdatePacket(i);
+                inventory.removeItemNoUpdate(i);
                 return true;
             }
         }

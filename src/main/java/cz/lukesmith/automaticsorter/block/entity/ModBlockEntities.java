@@ -2,6 +2,7 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -20,7 +21,7 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("filter_be", () -> new BlockEntityType<>(FilterBlockEntity::new, Set.of(ModBlocks.FILTER_BLOCK.get())));
 
 
-    public static void registerModBlocksEntities() {
-        AutomaticSorter.LOGGER.info("Registering ModBlocksEntities for " + AutomaticSorter.MOD_ID);
+    public static void register(IEventBus eventBus) {
+        BLOCK_ENTITIES.register(eventBus);
     }
 }

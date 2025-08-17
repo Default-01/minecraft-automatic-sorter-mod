@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class FilterTypePacket {
     private final BlockPos pos;
@@ -24,9 +25,9 @@ public class FilterTypePacket {
         return new FilterTypePacket(buf.readBlockPos(), buf.readInt());
     }
 
-    public static void handle(FilterTypePacket msg, NetworkEvent.Context ctx) {
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
+    public static void handle(FilterTypePacket msg, CustomPayloadEvent.Context context) {
+        context.enqueueWork(() -> {
+            ServerPlayer player = context.getSender();
             if (player == null) return;
             Level world = player.level();
             if (world.getBlockEntity(msg.pos) instanceof FilterBlockEntity fe) {
@@ -34,7 +35,7 @@ public class FilterTypePacket {
                 fe.setChanged();
             }
         });
-        ctx.setPacketHandled(true);
+        context.setPacketHandled(true);
     }
 }
 

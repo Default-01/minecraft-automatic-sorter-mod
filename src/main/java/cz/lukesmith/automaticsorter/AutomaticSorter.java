@@ -1,10 +1,12 @@
 package cz.lukesmith.automaticsorter;
 
 import com.mojang.logging.LogUtils;
+import cz.lukesmith.automaticsorter.block.ModBlocks;
+import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
 import cz.lukesmith.automaticsorter.network.NetworkHandler;
-import net.minecraft.world.level.block.Blocks;
+import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -16,7 +18,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -33,16 +34,18 @@ public class AutomaticSorter {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
-        ModItemGroups.register(modEventBus);
-
+        ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModItemGroups.register(modEventBus);
+        ModScreenHandlers.register(modEventBus);
+
+        NetworkHandler.register();
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-
-        NetworkHandler.register();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
