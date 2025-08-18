@@ -6,7 +6,9 @@ import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
 import cz.lukesmith.automaticsorter.network.NetworkHandler;
+import cz.lukesmith.automaticsorter.screen.FilterScreen;
 import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -68,7 +70,7 @@ public class AutomaticSorter {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-
+            MenuScreens.register(ModScreenHandlers.FILTER_SCREEN_HANDLER.get(), FilterScreen::new);
         }
     }
 }

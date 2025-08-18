@@ -14,7 +14,8 @@ public class ModScreenHandlers {
             DeferredRegister.create(Registries.MENU, AutomaticSorter.MOD_ID);
 
     public static final RegistryObject<MenuType<FilterScreenHandler>> FILTER_SCREEN_HANDLER =
-            MENUS.register("filter_screen", () -> IForgeMenuType.create(FilterScreenHandler::new));
+            MENUS.register("filter_screen",
+                    () -> IForgeMenuType.create(FilterScreenHandler::new));
 
 
     public static void register(IEventBus eventBus) {

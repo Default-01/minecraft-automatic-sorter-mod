@@ -3,8 +3,12 @@ package cz.lukesmith.automaticsorter.block.custom;
 import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -127,10 +131,11 @@ public class FilterBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         if (!world.isClientSide) {
-            MenuProvider screenHandlerFactory = ((FilterBlockEntity) world.getBlockEntity(pos));
-
-            if (screenHandlerFactory != null) {
-                player.openMenu(screenHandlerFactory);
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof FilterBlockEntity filterBlockEntity) {
+                ((ServerPlayer) player).openMenu(new SimpleMenuProvider(filterBlockEntity, Component.literal("Growth Chamber")), pos);
+            } else {
+                throw new IllegalStateException("Our Container provider is missing!");
             }
         }
 
