@@ -3,12 +3,9 @@ package cz.lukesmith.automaticsorter.inventory.inventoryUtils;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.InventoryAdapter;
-import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.ItemStackHandlerInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
@@ -34,7 +31,7 @@ public class MainInventoryUtil {
                 return new InventoryAdapter(inventory);
             }
         } else if (blockEntity instanceof FilterBlockEntity filterBlockEntity) {
-            return new ItemStackHandlerInventoryAdapter(filterBlockEntity.getInventory());
+            return new InventoryAdapter(filterBlockEntity.getContainer());
         } else {
             if (assortedIU.isRelatedStorage(block, blockEntity)) {
                 return assortedIU.getInventoryAdapter(world, pos, block, blockEntity);

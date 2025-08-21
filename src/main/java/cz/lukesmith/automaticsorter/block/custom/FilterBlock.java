@@ -6,15 +6,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -24,13 +24,15 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 
@@ -41,6 +43,7 @@ public class FilterBlock extends BaseEntityBlock {
 
     public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
     public static final MapCodec<FilterBlock> CODEC = simpleCodec(FilterBlock::new);
+    public static BlockPos pos = BlockPos.ZERO;
 
     public FilterBlock(Properties settings) {
         super(settings);
@@ -59,6 +62,9 @@ public class FilterBlock extends BaseEntityBlock {
 
     @Override
     protected List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
+        if (pParams.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof FilterBlockEntity filterBlockEntity) {
+            Containers.dropContents(pParams.getLevel(), this.pos, filterBlockEntity.getContainer());
+        }
         return super.getDrops(pState, pParams);
     }
 
@@ -120,6 +126,7 @@ public class FilterBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+        this.pos = pPos;
         return new FilterBlockEntity(pPos, pState);
     }
 
@@ -151,23 +158,6 @@ public class FilterBlock extends BaseEntityBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
     }
-
-    @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        super.onBlockStateChange(level, pos, oldState, newState);
-    }
-
-    /*@Override
-    public void onRemove(BlockState oldState, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!oldState.is(newState.getBlock())) {
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be instanceof FilterBlockEntity) {
-                Containers.dropContents(world, pos, (FilterBlockEntity) be);
-                world.updateNeighbourForOutputSignal(pos, this);
-            }
-            super.onRemove(oldState, world, pos, newState, isMoving);
-        }
-    }*/
 }
 
 

@@ -5,12 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -65,6 +63,65 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
 
     public ItemStackHandler getInventory() {
         return inventory;
+    }
+
+    public Container getContainer() {
+        return new Container() {
+            @Override
+            public int getContainerSize() {
+                return inventory.getSlots();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                for (int i = 0; i < getContainerSize(); i++) {
+                    if (!getItem(i).isEmpty()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public @NotNull ItemStack getItem(int index) {
+                return inventory.getStackInSlot(index);
+            }
+
+            @Override
+            public @NotNull ItemStack removeItem(int index, int count) {
+                return inventory.extractItem(index, count, false);
+            }
+
+            @Override
+            public @NotNull ItemStack removeItemNoUpdate(int pSlot) {
+                ItemStack stack = inventory.getStackInSlot(pSlot);
+                if (!stack.isEmpty()) {
+                    inventory.setStackInSlot(pSlot, ItemStack.EMPTY);
+                    return stack;
+                }
+                return ItemStack.EMPTY;
+            }
+
+            @Override
+            public void setItem(int index, @NotNull ItemStack stack) {
+                inventory.setStackInSlot(index, stack);
+            }
+
+            @Override
+            public void setChanged() {
+
+            }
+
+            @Override
+            public boolean stillValid(@NotNull Player pPlayer) {
+                return false;
+            }
+
+            @Override
+            public void clearContent() {
+                inventory.setSize(0);
+            }
+        };
     }
 
     public FilterBlockEntity(BlockPos pos, BlockState state) {
