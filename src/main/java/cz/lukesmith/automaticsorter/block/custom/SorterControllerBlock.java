@@ -2,6 +2,7 @@ package cz.lukesmith.automaticsorter.block.custom;
 
 import com.mojang.serialization.MapCodec;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
+import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -34,7 +35,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return null;
+        return new SorterControllerBlockEntity(pPos, pState);
     }
 
     @Override
