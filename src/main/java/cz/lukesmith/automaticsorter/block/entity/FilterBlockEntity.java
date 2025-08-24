@@ -4,9 +4,11 @@ import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,9 +26,13 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FilterBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -39,7 +45,7 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (!level.isClientSide()) {
+            if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
@@ -133,12 +139,29 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     protected void loadAdditional(ValueInput pInput) {
         super.loadAdditional(pInput);
+        NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(pInput, items);
+        System.out.println("Slots count: " + inventory.getSlots());
+        System.out.println("Items size: " + items.size());
+
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            System.out.println("Setting slot " + i + " with item: " + items.get(i));
+            inventory.setStackInSlot(i, items.get(i));
+        }
+
         filterType = pInput.getInt("FilterType").orElse(0);
+        this.setChanged();
     }
 
     @Override
     protected void saveAdditional(ValueOutput pOutput) {
         super.saveAdditional(pOutput);
+        NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            items.set(i, inventory.getStackInSlot(i));
+        }
+
+        ContainerHelper.saveAllItems(pOutput, items);
         pOutput.putInt("FilterType", filterType);
     }
 
