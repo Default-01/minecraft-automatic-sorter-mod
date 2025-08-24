@@ -13,7 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -51,7 +51,7 @@ public class ModBlocks {
                 .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, name))).useBlockDescriptionPrefix()));
     }
 
-    public static void register(IEventBus eventBus) {
+    public static void register(BusGroup eventBus) {
         BLOCKS.register(eventBus);
     }
 }

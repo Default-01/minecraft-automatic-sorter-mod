@@ -13,8 +13,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -30,9 +30,10 @@ public class AutomaticSorter {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     public AutomaticSorter(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
+        BusGroup modEventBus = context.getModBusGroup();
         // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
+        FMLCommonSetupEvent.getBus(modEventBus).addListener(this::commonSetup);
+
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
@@ -45,7 +46,7 @@ public class AutomaticSorter {
         NetworkHandler.register();
 
         // Register the item to a creative tab
-        modEventBus.addListener(this::addCreative);
+        BuildCreativeModeTabContentsEvent.getBus(modEventBus).addListener(AutomaticSorter::addCreative);
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
@@ -55,7 +56,7 @@ public class AutomaticSorter {
     }
 
     // Add the example block item to the building blocks tab
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
+    private static void addCreative(BuildCreativeModeTabContentsEvent event) {
 
     }
 

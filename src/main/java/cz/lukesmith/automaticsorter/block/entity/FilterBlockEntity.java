@@ -17,6 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -129,17 +131,15 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.loadAdditional(pTag, pRegistries);
-        inventory.deserializeNBT(pRegistries, pTag.getCompound("FilterInventory").orElse(new CompoundTag()));
-        filterType = pTag.getInt("FilterType").orElse(FilterTypeEnum.IN_INVENTORY.getValue());
+    protected void loadAdditional(ValueInput pInput) {
+        super.loadAdditional(pInput);
+        filterType = pInput.getInt("FilterType").orElse(0);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.saveAdditional(pTag, pRegistries);
-        pTag.put("FilterInventory", inventory.serializeNBT(pRegistries));
-        pTag.putInt("FilterType", filterType);
+    protected void saveAdditional(ValueOutput pOutput) {
+        super.saveAdditional(pOutput);
+        pOutput.putInt("FilterType", filterType);
     }
 
     public static FilterBlockEntity create(BlockPos pos, BlockState state) {

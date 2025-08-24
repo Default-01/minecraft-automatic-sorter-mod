@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
 
 import java.util.*;
 
@@ -193,7 +194,7 @@ public class SorterControllerBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookup) {
-        super.onDataPacket(connection, pkt, lookup);
+    public void onDataPacket(Connection connection, ValueInput data, HolderLookup.Provider lookup) {
+        super.onDataPacket(connection, data, lookup);
     }
 }
