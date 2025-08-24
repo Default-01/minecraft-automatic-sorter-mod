@@ -8,15 +8,21 @@ import cz.lukesmith.automaticsorter.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.network.PacketDistributor;
+
+import java.util.Collections;
+import java.util.List;
 
 public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
@@ -42,6 +48,10 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         return Component.literal(FilterBlockEntity.FilterTypeEnum.getName(menu.getFilterType()));
     }
 
+    private List<FormattedText> getButtonTextList() {
+        return List.of(getButtonText());
+    }
+
     @Override
     protected void init() {
         super.init();
@@ -63,9 +73,8 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         renderTooltip(context, mouseX, mouseY);
-
         if (this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            context.renderTooltip(getFont(), getButtonText(), mouseX, mouseY);
+            context.renderComponentTooltip(getFont(), getButtonTextList(), mouseX, mouseY, ItemStack.EMPTY);
         }
 
         if (!this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {

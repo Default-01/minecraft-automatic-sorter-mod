@@ -52,7 +52,7 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return inventoryCap.cast(); // vrátí inventář
+            return inventoryCap.cast();
         }
         return super.getCapability(cap, side);
     }

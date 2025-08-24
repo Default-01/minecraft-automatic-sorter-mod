@@ -31,23 +31,27 @@ public class AutomaticSorter {
     public static final Logger LOGGER = LogUtils.getLogger();
     public AutomaticSorter(FMLJavaModLoadingContext context) {
         BusGroup modEventBus = context.getModBusGroup();
-        // Register the commonSetup method for modloading
+
+        // Common setup
         FMLCommonSetupEvent.getBus(modEventBus).addListener(this::commonSetup);
 
-        // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
+        // Creative tab population
+        BuildCreativeModeTabContentsEvent.getBus(modEventBus).addListener(AutomaticSorter::addCreative);
 
+        // ServerStartingEvent registration
+        ServerStartingEvent.BUS.addListener(this::onServerStarting);
+
+        // Mod registrations
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItemGroups.register(modEventBus);
         ModScreenHandlers.register(modEventBus);
 
+        // Networking
         NetworkHandler.register();
 
-        // Register the item to a creative tab
-        BuildCreativeModeTabContentsEvent.getBus(modEventBus).addListener(AutomaticSorter::addCreative);
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
+        // Config
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
@@ -60,8 +64,6 @@ public class AutomaticSorter {
 
     }
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-    @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
 
     }
