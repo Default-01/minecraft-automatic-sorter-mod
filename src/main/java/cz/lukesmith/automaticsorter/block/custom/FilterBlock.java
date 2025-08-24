@@ -50,11 +50,6 @@ public class FilterBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.UP));
     }
 
-    protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-        return super.getShape(pState, pLevel, pPos, pContext);
-    }
-
-
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
@@ -68,14 +63,24 @@ public class FilterBlock extends BaseEntityBlock {
         return super.getDrops(pState, pParams);
     }
 
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, CollisionContext context) {
-        Vec3[][] shapes = getShapesForFacing(state.getValue(FACING));
+    @Override
+    protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        Vec3[][] shapes = getShapesForFacing(pState.getValue(FACING));
 
         VoxelShape shape = Shapes.empty();
         for (Vec3[] shapePart : shapes) {
             shapePart[0] = shapePart[0].scale(1 / 16.0);
             shapePart[1] = shapePart[1].scale(1 / 16.0);
-            shape = Shapes.join(shape, Shapes.box(shapePart[0].get(Direction.Axis.X), shapePart[0].get(Direction.Axis.Y), shapePart[0].get(Direction.Axis.Z), shapePart[1].get(Direction.Axis.X), shapePart[1].get(Direction.Axis.Y), shapePart[1].get(Direction.Axis.Z)), BooleanOp.AND);
+            shape = Shapes.or(shape,
+                    Shapes.box(
+                            shapePart[0].get(Direction.Axis.X),
+                            shapePart[0].get(Direction.Axis.Y),
+                            shapePart[0].get(Direction.Axis.Z),
+                            shapePart[1].get(Direction.Axis.X),
+                            shapePart[1].get(Direction.Axis.Y),
+                            shapePart[1].get(Direction.Axis.Z)
+                    )
+            );
         }
 
         return shape;
