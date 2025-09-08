@@ -20,13 +20,12 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
 
-    @Override
-    protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+    public static VoxelShape getSHAPE() {
         return SHAPE;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState pState) {
+    public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
 
@@ -34,10 +33,10 @@ public class SorterControllerBlock extends BaseEntityBlock {
         super(settings);
     }
 
-    @Override
+   /* @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return null;
-    }
+    }*/
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {

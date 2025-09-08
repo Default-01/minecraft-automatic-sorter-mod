@@ -129,16 +129,16 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.loadAdditional(pTag, pRegistries);
-        inventory.deserializeNBT(pRegistries, pTag.getCompound("FilterInventory"));
+    public void load(CompoundTag pTag) {
+        super.load(pTag);
+        inventory.deserializeNBT(pTag.getCompound("FilterInventory"));
         filterType = pTag.getInt("FilterType");
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.saveAdditional(pTag, pRegistries);
-        pTag.put("FilterInventory", inventory.serializeNBT(pRegistries));
+    protected void saveAdditional(CompoundTag pTag) {
+        super.saveAdditional(pTag);
+        pTag.put("FilterInventory", inventory.serializeNBT());
         pTag.putInt("FilterType", filterType);
     }
 

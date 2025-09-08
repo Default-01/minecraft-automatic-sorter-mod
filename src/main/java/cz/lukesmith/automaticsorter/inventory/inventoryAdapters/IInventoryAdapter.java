@@ -25,10 +25,10 @@ public interface IInventoryAdapter {
             return ItemStack.isSameItem(insertingItem, compareItem);
         }
 
-        return ItemStack.isSameItemSameComponents(insertingItem, compareItem);
+        return ItemStack.isSameItemSameTags(insertingItem, compareItem);
     }
 
     default boolean canCombineStacks(ItemStack insertingItem, ItemStack compareItem) {
-        return ItemStack.isSameItemSameComponents(insertingItem, compareItem);
+        return ItemStack.isSameItemSameTags(insertingItem, compareItem);
     }
 }

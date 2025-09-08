@@ -8,7 +8,6 @@ import cz.lukesmith.automaticsorter.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +18,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AutomaticSorter.MOD_ID, "textures/gui/filter.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.tryBuild(AutomaticSorter.MOD_ID, "textures/gui/filter.png");
     private Button receiveItemsButton;
     private static final ItemStack CHEST_BLOCK = new ItemStack(Blocks.CHEST);
     private static final ItemStack FILTER_BLOCK = new ItemStack(ModBlocks.FILTER_BLOCK.get());
@@ -59,7 +58,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        renderBg(context, delta, mouseX, mouseY);
         super.render(context, mouseX, mouseY, delta);
         renderTooltip(context, mouseX, mouseY);
 

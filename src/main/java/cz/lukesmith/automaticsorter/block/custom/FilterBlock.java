@@ -12,9 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -39,10 +36,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import javax.swing.text.html.BlockView;
 import java.util.List;
 
+import static net.minecraft.world.level.levelgen.structure.Structure.simpleCodec;
+
 public class FilterBlock extends BaseEntityBlock {
 
     public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
-    public static final MapCodec<FilterBlock> CODEC = simpleCodec(FilterBlock::new);
     public static BlockPos pos = BlockPos.ZERO;
 
     public FilterBlock(Properties settings) {
@@ -51,12 +49,7 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
-    protected List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
+    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
         if (pParams.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof FilterBlockEntity filterBlockEntity) {
             Containers.dropContents(pParams.getLevel(), this.pos, filterBlockEntity.getContainer());
         }
@@ -64,7 +57,7 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         Vec3[][] shapes = getShapesForFacing(pState.getValue(FACING));
 
         VoxelShape shape = Shapes.empty();
@@ -125,7 +118,7 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState pState) {
+    public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
 
@@ -141,11 +134,11 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand interaction, BlockHitResult hit) {
         if (!world.isClientSide) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof FilterBlockEntity filterBlockEntity) {
-                ((ServerPlayer) player).openMenu(new SimpleMenuProvider(filterBlockEntity, Component.literal("Growth Chamber")), pos);
+                ((ServerPlayer) player).openMenu(new SimpleMenuProvider(filterBlockEntity, Component.literal("Growth Chamber")));
             } else {
                 throw new IllegalStateException("Our Container provider is missing!");
             }

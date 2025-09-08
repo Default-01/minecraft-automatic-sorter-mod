@@ -58,7 +58,7 @@ public class MultiInventoryAdapter implements IInventoryAdapter {
     }
 
     public void addInventoryAdapterAsFirst(IInventoryAdapter inventoryAdapter) {
-        inventoryAdapters.addFirst(inventoryAdapter);
+        inventoryAdapters.add(0, inventoryAdapter);
     }
 
     public void setInventoryAdapters(ArrayList<IInventoryAdapter> inventoryAdapters) {

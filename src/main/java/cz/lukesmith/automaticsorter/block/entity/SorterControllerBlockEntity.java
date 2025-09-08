@@ -189,9 +189,4 @@ public class SorterControllerBlockEntity extends BlockEntity {
 
         ticker = MAX_TICKER;
     }
-
-    @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookup) {
-        super.onDataPacket(connection, pkt, lookup);
-    }
 }

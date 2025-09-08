@@ -77,7 +77,7 @@ public class PipeBlock extends Block {
     }
 
     @Override
-    protected BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState, LevelAccessor pLevel, BlockPos pPos, BlockPos pNeighborPos) {
+    public BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState, LevelAccessor pLevel, BlockPos pPos, BlockPos pNeighborPos) {
         boolean isConnected = isConnectedToNeighbor(pNeighborState, pDirection);
         return pState.setValue(getPropertyForDirection(pDirection), isConnected);
     }

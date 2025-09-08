@@ -23,15 +23,15 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AutomaticSorter.MOD_ID);
 
     public static final RegistryObject<Block> PIPE_BLOCK = registerBlock("pipe",
-            (properties) -> new PipeBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK)
+            (properties) -> new PipeBlock(BlockBehaviour.Properties.copy(Blocks.COPPER_BLOCK)
                     .strength(1.0f, 2.0f).noOcclusion()));
 
     public static final RegistryObject<Block> SORTER_CONTROLLER_BLOCK = registerBlock("sorter_controller",
-            (properties) -> new SorterControllerBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK)
+            (properties) -> new SorterControllerBlock(BlockBehaviour.Properties.copy(Blocks.COPPER_BLOCK)
                     .strength(3.0f, 6.0f).noOcclusion()));
 
     public static final RegistryObject<Block> FILTER_BLOCK = registerBlock("filter",
-            (properties) -> new FilterBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_BLOCK)
+            (properties) -> new FilterBlock(BlockBehaviour.Properties.copy(Blocks.COPPER_BLOCK)
                     .strength(3.0f, 6.0f).noOcclusion()));
 
 

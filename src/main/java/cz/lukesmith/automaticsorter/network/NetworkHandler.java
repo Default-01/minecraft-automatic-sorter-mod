@@ -2,25 +2,27 @@ package cz.lukesmith.automaticsorter.network;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.SimpleChannel;
-
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public class NetworkHandler {
-    private static final String CHANNEL_NAME = "main";
-    public static final SimpleChannel CHANNEL = ChannelBuilder.named(ResourceLocation.tryBuild(AutomaticSorter.MOD_ID, CHANNEL_NAME))
-            .simpleChannel();
+    private static final String PROTOCOL_VERSION = "1";
+    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation(AutomaticSorter.MOD_ID, "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals
+    );
 
     private static int packetId = 0;
 
     public static void register() {
-        CHANNEL.messageBuilder(FilterTypePacket.class, packetId++)
-                .encoder(FilterTypePacket::encode)
-                .decoder(FilterTypePacket::decode)
-                .consumer(FilterTypePacket::handle)
-                .add();
+        CHANNEL.registerMessage(
+                packetId++,
+                FilterTypePacket.class,
+                FilterTypePacket::encode,
+                FilterTypePacket::decode,
+                FilterTypePacket::handle
+        );
     }
 }
-
-
-
