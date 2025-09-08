@@ -5,6 +5,7 @@ import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.network.FilterTypePacket;
 import cz.lukesmith.automaticsorter.network.NetworkHandler;
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -54,6 +55,12 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         }).pos(this.leftPos + 6, this.topPos + 14).size(18, 18).build();
 
         this.addRenderableWidget(receiveItemsButton);
+    }
+
+    private void sendFilterTypeUpdate(int value) {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        buf.writeInt(value);
+        ClientPlayNetworking.send(new Identifier(AutomaticSorter.MOD_ID, "update_receive_items"), buf);
     }
 
     @Override
