@@ -32,8 +32,7 @@ public class ExpandedInventoryUtil implements IInventoryUtil {
                     Object chestBlock = chestBlockClass.cast(block);
                     Method getContainerMethod = chestBlockClass.getMethod("getDirectionToAttached", BlockState.class);
                     Direction direction = (Direction) getContainerMethod.invoke(chestBlock, world.getBlockState(pos));
-                    Vec3i directionVec = direction.getUnitVec3i();
-                    BlockPos secondPos = pos.offset(directionVec);
+                    BlockPos secondPos = pos.relative(direction);
                     BlockEntity secondBlockEntity = world.getBlockEntity(secondPos);
                     Direction facing = world.getBlockState(pos).getValue(ChestBlock.FACING);
                     InventoryAdapter secondInventoryAdapter = new InventoryAdapter(getExpandedStorageInventory(secondBlockEntity));

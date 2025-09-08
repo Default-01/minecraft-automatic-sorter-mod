@@ -103,8 +103,7 @@ public class SorterControllerBlockEntity extends BlockEntity {
 
     private static boolean tryToTransferItem(Level world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
         Direction filterDirection = world.getBlockState(filterPos).getValue(FilterBlock.FACING);
-        Vec3i filterOffset = filterDirection.getUnitVec3i();
-        BlockPos chestPos = filterPos.offset(filterOffset);
+        BlockPos chestPos = filterPos.relative(filterDirection);
         IInventoryAdapter chestInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, chestPos);
         if (chestInventoryAdapter instanceof NoInventoryAdapter) {
             return false;
@@ -153,8 +152,7 @@ public class SorterControllerBlockEntity extends BlockEntity {
 
                 visited.add(currentPos);
                 for (Direction direction : Direction.values()) {
-                    Vec3i offsetDirection = direction.getUnitVec3i();
-                    BlockPos neighborPos = currentPos.offset(offsetDirection);
+                    BlockPos neighborPos = currentPos.relative(direction);
                     Block block = world.getBlockState(neighborPos).getBlock();
                     if (block instanceof PipeBlock) {
                         queue.add(neighborPos);

@@ -78,9 +78,9 @@ public class PipeBlock extends Block {
     }
 
     @Override
-    protected BlockState updateShape(BlockState pState, LevelReader pLevel, ScheduledTickAccess pScheduledTickAccess, BlockPos pPos, Direction pDirection, BlockPos pNeighborPos, BlockState pNeighborState, RandomSource pRandom) {
+    protected BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState, LevelAccessor pLevel, BlockPos pPos, BlockPos pNeighborPos) {
         boolean isConnected = isConnectedToNeighbor(pNeighborState, pDirection);
-        return pState.setValue(getPropertyForDirection(pDirection), isConnected);
+        return super.updateShape(pState, pDirection, pNeighborState, pLevel, pPos, pNeighborPos);
     }
 
     private boolean isConnectedToNeighbor(BlockState neighborState, Direction direction) {
@@ -101,9 +101,49 @@ public class PipeBlock extends Block {
             BlockState neighborState = world.getBlockState(neighborPos);
             state = state.setValue(getPropertyForDirection(direction), isConnectedToNeighbor(neighborState, direction));
         }
-
         world.setBlock(pos, state, 3);
+
+        // Aktualizace sousedních PipeBlocků
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            BlockState neighborState = world.getBlockState(neighborPos);
+            if (neighborState.getBlock() instanceof PipeBlock pipeBlock) {
+                BlockState updatedState = neighborState;
+                for (Direction dir : Direction.values()) {
+                    BlockPos adjPos = neighborPos.relative(dir);
+                    BlockState adjState = world.getBlockState(adjPos);
+                    updatedState = updatedState.setValue(
+                            pipeBlock.getPropertyForDirection(dir),
+                            pipeBlock.isConnectedToNeighbor(adjState, dir)
+                    );
+                }
+                world.setBlock(neighborPos, updatedState, 3);
+            }
+        }
     }
+
+    @Override
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, world, pos, newState, isMoving);
+
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            BlockState neighborState = world.getBlockState(neighborPos);
+            if (neighborState.getBlock() instanceof PipeBlock pipeBlock) {
+                BlockState updatedState = neighborState;
+                for (Direction dir : Direction.values()) {
+                    BlockPos adjPos = neighborPos.relative(dir);
+                    BlockState adjState = world.getBlockState(adjPos);
+                    updatedState = updatedState.setValue(
+                            pipeBlock.getPropertyForDirection(dir),
+                            pipeBlock.isConnectedToNeighbor(adjState, dir)
+                    );
+                }
+                world.setBlock(neighborPos, updatedState, 3);
+            }
+        }
+    }
+
 
     private BooleanProperty getPropertyForDirection(Direction direction) {
         return switch (direction) {

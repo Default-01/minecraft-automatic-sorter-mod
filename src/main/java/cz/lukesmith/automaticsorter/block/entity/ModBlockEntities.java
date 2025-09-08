@@ -15,10 +15,12 @@ public class ModBlockEntities {
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AutomaticSorter.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<SorterControllerBlockEntity>> SORTER_CONTROLLER_BLOCK_ENTITY =
-            BLOCK_ENTITIES.register("sorter_controller_be", () -> new BlockEntityType<>(SorterControllerBlockEntity::new, Set.of(ModBlocks.SORTER_CONTROLLER_BLOCK.get())));
+            BLOCK_ENTITIES.register("sorter_controller_be",
+                    () -> BlockEntityType.Builder.of(SorterControllerBlockEntity::new, ModBlocks.SORTER_CONTROLLER_BLOCK.get()).build(null));
 
     public static final RegistryObject<BlockEntityType<FilterBlockEntity>> FILTER_BLOCK_ENTITY =
-            BLOCK_ENTITIES.register("filter_be", () -> new BlockEntityType<>(FilterBlockEntity::new, Set.of(ModBlocks.FILTER_BLOCK.get())));
+            BLOCK_ENTITIES.register("filter_be",
+                    () -> BlockEntityType.Builder.of(FilterBlockEntity::new, ModBlocks.FILTER_BLOCK.get()).build(null));
 
 
     public static void register(IEventBus eventBus) {

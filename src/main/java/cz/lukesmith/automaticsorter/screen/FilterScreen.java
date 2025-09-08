@@ -34,7 +34,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
     protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        pGuiGraphics.blit(RenderType::guiTextured, TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
+        pGuiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
     }
 
     private Component getButtonText() {
@@ -64,7 +64,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
         renderTooltip(context, mouseX, mouseY);
 
         if (this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
-            context.renderTooltip(getFont(), getButtonText(), mouseX, mouseY);
+            context.renderTooltip(font, getButtonText(), mouseX, mouseY);
         }
 
         if (!this.receiveItemsButton.isMouseOver(mouseX, mouseY)) {
