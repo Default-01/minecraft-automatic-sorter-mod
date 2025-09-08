@@ -49,19 +49,18 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
 
         receiveItemsButton = new Button.Builder(Component.literal(""), button -> {
             int value = menu.toggleFilterType();
-            BlockPos blockPos = menu.getBlockPos();
-            FilterTypePacket payload = new FilterTypePacket(blockPos, value);
-            NetworkHandler.CHANNEL.send(payload, PacketDistributor.SERVER.noArg());
+            sendFilterTypeUpdate(value);
         }).pos(this.leftPos + 6, this.topPos + 14).size(18, 18).build();
 
         this.addRenderableWidget(receiveItemsButton);
     }
 
     private void sendFilterTypeUpdate(int value) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeInt(value);
-        ClientPlayNetworking.send(new Identifier(AutomaticSorter.MOD_ID, "update_receive_items"), buf);
+        BlockPos pos = menu.getBlockPos();
+        FilterTypePacket packet = new FilterTypePacket(pos, value);
+        NetworkHandler.CHANNEL.sendToServer(packet);
     }
+
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
