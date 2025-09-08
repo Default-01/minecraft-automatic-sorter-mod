@@ -15,7 +15,12 @@ public class ModScreenHandlers {
 
     public static final RegistryObject<MenuType<FilterScreenHandler>> FILTER_SCREEN_HANDLER =
             MENUS.register("filter_screen",
-                    () -> IForgeMenuType.create(FilterScreenHandler::new));
+                    () -> IForgeMenuType.create((windowId, inv, data) -> {
+                        // Očekává se, že data nejsou null
+                        if (data == null) throw new IllegalStateException("Missing extra data for FilterScreenHandler!");
+                        return new FilterScreenHandler(windowId, inv, data);
+                    }));
+
 
 
     public static void register(IEventBus eventBus) {

@@ -28,6 +28,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -134,18 +135,19 @@ public class FilterBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand interaction, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!world.isClientSide) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof FilterBlockEntity filterBlockEntity) {
-                ((ServerPlayer) player).openMenu(new SimpleMenuProvider(filterBlockEntity, Component.literal("Growth Chamber")));
+            if (blockEntity instanceof MenuProvider provider && player instanceof ServerPlayer serverPlayer) {
+                NetworkHooks.openScreen(serverPlayer, provider, pos);
             } else {
                 throw new IllegalStateException("Our Container provider is missing!");
             }
         }
-
         return InteractionResult.SUCCESS;
+
     }
+
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
