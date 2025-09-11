@@ -146,9 +146,9 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
 
         public static String getName(FilterTypeEnum type) {
             return switch (type) {
-                case WHITELIST -> "Whitelist";
-                case IN_INVENTORY -> "In Inventory";
-                case REJECTS -> "Rejects";
+                case WHITELIST -> "automaticsroter.filter_mode.whitelist";
+                case IN_INVENTORY -> "automaticsroter.filter_mode.in_inventory";
+                case REJECTS -> "automaticsorter.filter_mode.rejects";
             };
         }
 
