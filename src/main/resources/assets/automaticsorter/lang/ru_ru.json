@@ -1,0 +1,10 @@
+{
+  "itemGroup.automatic_sorter_group": "Автоматическая сортировка",
+  "block.automaticsorter.pipe": "Труба",
+  "block.automaticsorter.filter": "Фильтр",
+  "block.automaticsorter.sorter_controller": "Контроллер сортировки",
+  "automaticsorter.filter_block_entity": "Фильтр",
+  "automaticsroter.filter_mode.whitelist": "Белый список",
+  "automaticsroter.filter_mode.in_inventory": "В инвентаре",
+  "automaticsorter.filter_mode.rejects": "Исключение"
+}
