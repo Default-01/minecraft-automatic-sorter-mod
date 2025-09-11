@@ -45,7 +45,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterScreenHandler> {
     }
 
     private Component getButtonText() {
-        return Component.literal(FilterBlockEntity.FilterTypeEnum.getName(menu.getFilterType()));
+        return Component.translatable(FilterBlockEntity.FilterTypeEnum.getName(menu.getFilterType()));
     }
 
     private List<FormattedText> getButtonTextList() {
