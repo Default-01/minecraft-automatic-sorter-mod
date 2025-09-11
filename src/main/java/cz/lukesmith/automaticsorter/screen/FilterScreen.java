@@ -50,7 +50,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
     }
 
     private Text getButtonText() {
-        return Text.of(FilterBlockEntity.FilterTypeEnum.getName(handler.getFilterType()));
+        return Text.translatable(FilterBlockEntity.FilterTypeEnum.getName(handler.getFilterType()));
     }
 
     @Override
