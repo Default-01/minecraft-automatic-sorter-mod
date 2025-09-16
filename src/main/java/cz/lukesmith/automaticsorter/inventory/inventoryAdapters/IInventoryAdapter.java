@@ -10,7 +10,7 @@ public interface IInventoryAdapter {
 
     void removeItem(int index, int amount);
 
-    boolean addItem(ItemStack itemStack);
+    int addItem(ItemStack itemStack, int maxAmount);
 
     ArrayList<ItemStack> getAllStacks();
 

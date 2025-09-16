@@ -51,6 +51,12 @@ public class AutomaticSorter {
         // Networking
         NetworkHandler.register();
 
+        // New 1.4.0
+        ModCommands.register();
+        NetworkHandler.register();
+        NetworkHandler.registerServer();
+        NetworkHandler.sendWhenJoin();
+
         // Config
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }

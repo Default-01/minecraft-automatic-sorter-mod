@@ -19,6 +19,16 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
 
+    // new 1.4.0
+    /*
+    private static final VoxelShape SHAPE = createCuboidShape(0, 0, 0, 16, 16, 16);
+    public static final EnumProperty<Direction> FACING;
+
+    static {
+        FACING = FacingBlock.FACING;
+    }*/
+
+
     @Override
     protected VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         return SHAPE;
@@ -26,6 +36,9 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     public SorterControllerBlock(Properties settings) {
         super(settings);
+
+        // new 1.4.0
+        this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.UP));
     }
 
     @Override
@@ -46,5 +59,29 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
         return createTickerHelper(pBlockEntityType, ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY.get(),
                 (level, blockPos, blockState, sorterControllerBlockEntity) -> sorterControllerBlockEntity.tick(level, blockPos, blockState));
+    }
+
+    // new 1.4.0
+    @Override
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (!world.isClient) {
+            NamedScreenHandlerFactory screenHandlerFactory = ((SorterControllerBlockEntity) world.getBlockEntity(pos));
+
+            if (screenHandlerFactory != null) {
+                player.openHandledScreen(screenHandlerFactory);
+            }
+        }
+
+        return ActionResult.SUCCESS;
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        return this.getDefaultState().with(FACING, ctx.getSide().getOpposite());
     }
 }

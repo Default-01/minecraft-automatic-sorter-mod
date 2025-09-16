@@ -92,6 +92,15 @@ public class PipeBlock extends Block {
         } else return neighborState.getBlock() instanceof PipeBlock;
     }
 
+    /* new 1.4.0
+        private boolean isConnectedToNeighbor(BlockState neighborState, Direction direction) {
+        if (neighborState.getBlock() instanceof SorterControllerBlock || neighborState.getBlock() instanceof FilterBlock) {
+            Direction filterFacing = neighborState.get(FilterBlock.FACING);
+            return direction == filterFacing;
+        } else return neighborState.getBlock() instanceof PipeBlock;
+    }
+     */
+
     @Override
     public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, world, pos, oldState, isMoving);

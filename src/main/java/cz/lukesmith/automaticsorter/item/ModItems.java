@@ -9,6 +9,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AutomaticSorter.MOD_ID);
 
+    // new 1.4.0
+    public static final Item SORTER_AMPLIFIER = registerItem("sorter_amplifier", SorterAmplifierItem::new, new Item.Settings());
+
     public static void register(BusGroup eventBus) {
         ITEMS.register(eventBus);
     }
