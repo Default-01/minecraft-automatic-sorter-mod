@@ -36,23 +36,26 @@ public class InventoryAdapter implements IInventoryAdapter {
     }
 
     @Override
-    public boolean addItem(ItemStack itemStack) {
+    public int addItem(ItemStack itemStack, int maxAmount) {
         int size = inventory.size();
-        ItemStack tranferStack = itemStack.copyWithCount(1);
-        for (int i = 0; i < size; i++) {
+        int toTransfer = Math.min(maxAmount, itemStack.getCount());
+        int transferred = 0;
+        for (int i = 0; i < size && transferred < toTransfer; i++) {
             ItemStack stack = inventory.getStack(i);
-            if (this.canCombineStacks(stack, tranferStack) && stack.getCount() < stack.getMaxCount()) {
-                stack.increment(1);
+            if (this.canCombineStacks(stack, itemStack) && stack.getCount() < stack.getMaxCount()) {
+                int canAdd = Math.min(toTransfer - transferred, stack.getMaxCount() - stack.getCount());
+                stack.increment(canAdd);
+                transferred += canAdd;
                 inventory.markDirty();
-                return true;
             } else if (stack.isEmpty()) {
-                inventory.setStack(i, tranferStack);
+                int put = toTransfer - transferred;
+                ItemStack newStack = itemStack.copyWithCount(put);
+                inventory.setStack(i, newStack);
+                transferred += put;
                 inventory.markDirty();
-                return true;
             }
         }
-
-        return false;
+        return transferred;
     }
 
     @Override

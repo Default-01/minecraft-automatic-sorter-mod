@@ -56,11 +56,12 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         return null;
     }
 
-    private static boolean tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter) {
+    private static int tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter, int maxTransfer) {
         if (rootInventoryAdapter.isEmpty()) {
-            return false;
+            return maxTransfer;
         }
 
+        int transferLeft = maxTransfer;
         ArrayList<ItemStack> stacks = rootInventoryAdapter.getAllStacks();
         int stackSize = stacks.size();
         for (int i = 0; i < stackSize; i++) {
@@ -71,20 +72,26 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
             ItemStack containItemStack = filterInventoryAdapter.containsItem(rootInventoryItemStack);
             if (!containItemStack.isEmpty()) {
-                if (chestInventoryAdapter.addItem(rootInventoryItemStack)) {
-                    rootInventoryAdapter.removeItem(i, 1);
-                    return true;
+                int transferedInStack = chestInventoryAdapter.addItem(rootInventoryItemStack, transferLeft);
+                transferLeft -= transferedInStack;
+                if (transferedInStack > 0) {
+                    rootInventoryAdapter.removeItem(i, transferedInStack);
+                    if (transferLeft <= 0) {
+                        return 0;
+                    }
                 }
             }
         }
 
-        return false;
+        return transferLeft;
     }
 
-    private static boolean tryInInventoryMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter) {
+    private static int tryInInventoryMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, int maxTransfer) {
         if (rootInventoryAdapter.isEmpty()) {
-            return false;
+            return maxTransfer;
         }
+
+        int transferLeft = maxTransfer;
 
         ArrayList<ItemStack> stacks = rootInventoryAdapter.getAllStacks();
         int stackSize = stacks.size();
@@ -96,20 +103,26 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
             ItemStack containItemStack = chestInventoryAdapter.containsItem(rootInventoryItemStack);
             if (!containItemStack.isEmpty()) {
-                if (chestInventoryAdapter.addItem(rootInventoryItemStack)) {
-                    rootInventoryAdapter.removeItem(i, 1);
-                    return true;
+                int transferedInStack = chestInventoryAdapter.addItem(rootInventoryItemStack, transferLeft);
+                transferLeft -= transferedInStack;
+                if (transferedInStack > 0) {
+                    rootInventoryAdapter.removeItem(i, transferedInStack);
+                    if (transferLeft <= 0) {
+                        return 0;
+                    }
                 }
             }
         }
 
-        return false;
+        return transferLeft;
     }
 
-    private static boolean tryRejectsMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter) {
+    private static int tryRejectsMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, int maxTransfer) {
         if (rootInventoryAdapter.isEmpty()) {
-            return false;
+            return maxTransfer;
         }
+
+        int transferLeft = maxTransfer;
 
         ArrayList<ItemStack> stacks = rootInventoryAdapter.getAllStacks();
         int stackSize = stacks.size();
@@ -119,32 +132,36 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                 continue;
             }
 
-            if (chestInventoryAdapter.addItem(rootInventoryItemStack)) {
-                rootInventoryAdapter.removeItem(i, 1);
-                return true;
+            int transferedInStack = chestInventoryAdapter.addItem(rootInventoryItemStack, transferLeft);
+            transferLeft -= transferedInStack;
+            if (transferedInStack > 0) {
+                rootInventoryAdapter.removeItem(i, transferedInStack);
+                if (transferLeft <= 0) {
+                    return 0;
+                }
             }
         }
 
-        return false;
+        return transferLeft;
     }
 
-    private static boolean tryToTransferItem(World world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
+    private static int tryToTransferItem(World world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter, int maxTransfer) {
         Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
         BlockPos chestPos = filterPos.offset(filterDirection);
         IInventoryAdapter chestInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, chestPos);
         if (chestInventoryAdapter instanceof NoInventoryAdapter) {
-            return false;
+            return maxTransfer;
         }
 
         int filterType = filterBlockEntity.getFilterType();
         return switch (FilterBlockEntity.FilterTypeEnum.fromValue(filterType)) {
             case WHITELIST -> {
                 IInventoryAdapter filterInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, filterPos);
-                yield tryWhitelistMode(rootInventoryAdapter, chestInventoryAdapter, filterInventoryAdapter);
+                yield tryWhitelistMode(rootInventoryAdapter, chestInventoryAdapter, filterInventoryAdapter, maxTransfer);
             }
-            case IN_INVENTORY -> tryInInventoryMode(rootInventoryAdapter, chestInventoryAdapter);
-            case REJECTS -> tryRejectsMode(rootInventoryAdapter, chestInventoryAdapter);
-            default -> false;
+            case IN_INVENTORY -> tryInInventoryMode(rootInventoryAdapter, chestInventoryAdapter, maxTransfer);
+            case REJECTS -> tryRejectsMode(rootInventoryAdapter, chestInventoryAdapter, maxTransfer);
+            default -> maxTransfer;
         };
 
     }
@@ -159,6 +176,9 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
+        // TODO: Need to implement inventory for sorter controller where to store sort controller upgrade
+        int maxTransfer = 3;
+
         Set<BlockPos> visited = new HashSet<>();
         BlockPos belowPos = pos.down();
 
@@ -168,10 +188,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
             IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.up());
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
-            boolean itemTransfered = false;
+            int itemsTransfered = 0;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
 
-            while (!queue.isEmpty() && !itemTransfered && !noInventoryRootChest) {
+            while (!queue.isEmpty() && (itemsTransfered < maxTransfer) && !noInventoryRootChest) {
                 BlockPos currentPos = queue.poll();
                 if (visited.contains(currentPos)) {
                     continue;
@@ -196,8 +216,8 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                                 continue;
                             }
 
-                            if (tryToTransferItem(world, filterBlockEntity, neighborPos, rootInventoryAdapter)) {
-                                itemTransfered = true;
+                            itemsTransfered -= tryToTransferItem(world, filterBlockEntity, neighborPos, rootInventoryAdapter, maxTransfer - itemsTransfered);
+                            if (itemsTransfered >= maxTransfer) {
                                 break;
                             }
                         }
@@ -205,9 +225,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                 }
             }
 
-            if (!itemTransfered) {
+            if (itemsTransfered < maxTransfer) {
                 for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                    if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter)) {
+                    itemsTransfered -= tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter, maxTransfer - itemsTransfered);
+                    if (itemsTransfered >= maxTransfer) {
                         break;
                     }
                 }
