@@ -1,0 +1,50 @@
+package cz.lukesmith.automaticsorter.screen;
+
+import cz.lukesmith.automaticsorter.AutomaticSorter;
+import cz.lukesmith.automaticsorter.block.ModBlocks;
+import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
+import cz.lukesmith.automaticsorter.network.FilterTypePayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+
+public class SorterControllerScreen extends HandledScreen<SorterControllerScreenHandler> {
+
+    private static final Identifier TEXTURE = Identifier.of(AutomaticSorter.MOD_ID, "textures/gui/sorter_controller.png");
+
+
+    public SorterControllerScreen(SorterControllerScreenHandler handler, PlayerInventory inventory, Text title) {
+        super(handler, inventory, title);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        titleY = 1000;
+        playerInventoryTitleY = 1000;
+    }
+
+    @Override
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+        int x = (width - backgroundWidth) / 2;
+        int y = (height - backgroundHeight) / 2;
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0f, 0f, backgroundWidth, backgroundHeight, 176, 166);
+    }
+
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
+    }
+}

@@ -1,19 +1,27 @@
 package cz.lukesmith.automaticsorter.block.entity;
 
+import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
+import cz.lukesmith.automaticsorter.item.ModItems;
+import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
+import cz.lukesmith.automaticsorter.screen.SorterControllerScreenHandler;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -23,10 +31,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class SorterControllerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, ImplementedInventory {
+public class SorterControllerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<BlockPos>, ImplementedInventory {
 
     private int ticker = 0;
     private static final int MAX_TICKER = 5;
+    private double overflow = 0;
+    private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
 
     public SorterControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY, pos, state);
@@ -38,7 +48,19 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
     @Override
     public DefaultedList<ItemStack> getItems() {
-        return DefaultedList.ofSize(1, ItemStack.EMPTY);
+        return inventory;
+    }
+
+    @Override
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        Inventories.writeData(view, this.inventory);
+    }
+
+    @Override
+    protected void readData(ReadView view) {
+        super.readData(view);
+        Inventories.readData(view, this.inventory);
     }
 
     @Override
@@ -48,12 +70,12 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
     @Override
     public Text getDisplayName() {
-        return null;
+        return Text.translatable("block.automaticsorter.sorter_controller");
     }
 
     @Override
     public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return null;
+        return new SorterControllerScreenHandler(syncId, playerInventory, this.pos);
     }
 
     private static int tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter, int maxTransfer) {
@@ -176,9 +198,14 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
-        // TODO: Need to implement inventory for sorter controller where to store sort controller upgrade
-        int maxTransfer = 3;
+        int upgradeCount = 0;
+        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
+            upgradeCount = this.getStack(0).getCount();
+        }
 
+        double speed = 1 + (0.2 * upgradeCount);
+        int maxTransfer = (int) Math.floor(speed + overflow);
+        overflow = (speed + overflow) - maxTransfer;
         Set<BlockPos> visited = new HashSet<>();
         BlockPos belowPos = pos.down();
 
