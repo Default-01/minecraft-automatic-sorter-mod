@@ -210,11 +210,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
-        int upgradeCount = this.getAmplifierCount();
-
-        double speed = 1 + (0.2 * upgradeCount);
+        double speed = 1 + (0.1 * this.getAmplifierCount());
         int maxTransfer = (int) Math.floor(speed + overflow);
         overflow = (speed + overflow) - maxTransfer;
+
         Set<BlockPos> visited = new HashSet<>();
         Direction facing = world.getBlockState(pos).get(SorterControllerBlock.FACING);
         BlockPos nextPos = pos.offset(facing.getOpposite());
