@@ -3,11 +3,11 @@ package cz.lukesmith.automaticsorter.block.entity;
 import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
+import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
 import cz.lukesmith.automaticsorter.item.ModItems;
-import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
 import cz.lukesmith.automaticsorter.screen.SorterControllerScreenHandler;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
@@ -17,7 +17,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
@@ -217,13 +216,14 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         int maxTransfer = (int) Math.floor(speed + overflow);
         overflow = (speed + overflow) - maxTransfer;
         Set<BlockPos> visited = new HashSet<>();
-        BlockPos belowPos = pos.down();
+        Direction facing = world.getBlockState(pos).get(SorterControllerBlock.FACING);
+        BlockPos nextPos = pos.offset(facing.getOpposite());
 
-        if ((world.getBlockState(belowPos).getBlock() instanceof PipeBlock)) {
+        if ((world.getBlockState(nextPos).getBlock() instanceof PipeBlock)) {
             Queue<BlockPos> queue = new LinkedList<>();
-            queue.add(belowPos);
+            queue.add(nextPos);
 
-            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.up());
+            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.offset(facing));
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
             int itemsTransfered = 0;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
