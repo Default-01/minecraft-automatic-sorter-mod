@@ -17,7 +17,6 @@ public class SorterControllerScreenHandler extends ScreenHandler {
 
     private final Inventory inventory;
     public final SorterControllerBlockEntity blockEntity;
-    private final PropertyDelegate propertyDelegate;
     private final int inventorySize = 1;
 
 
@@ -32,7 +31,6 @@ public class SorterControllerScreenHandler extends ScreenHandler {
         this.inventory = ((Inventory) blockEntity);
         inventory.onOpen(playerInventory.player);
         this.blockEntity = ((SorterControllerBlockEntity) blockEntity);
-        this.propertyDelegate = propertyDelegate;
 
         this.addSlot(new Slot(this.inventory, 0, 80, 33));
 
@@ -84,5 +82,9 @@ public class SorterControllerScreenHandler extends ScreenHandler {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
+    }
+
+    public String getSpeedBoostText() {
+        return Math.round(blockEntity.getAmplifierCount() * blockEntity.getUpgradeSpeedPerItem() * 100) + "%";
     }
 }

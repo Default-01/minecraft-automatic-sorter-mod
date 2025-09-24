@@ -7,5 +7,6 @@
   "automaticsroter.filter_mode.whitelist": "Белый список",
   "automaticsroter.filter_mode.in_inventory": "В инвентаре",
   "automaticsorter.filter_mode.rejects": "Исключение",
-  "item.automaticsorter.sorter_amplifier": "Усилитель сортировщика"
+  "item.automaticsorter.sorter_amplifier": "Усилитель сортировщика",
+  "automaticsorter.screen_text.speed_boost": "Ускорение"
 }

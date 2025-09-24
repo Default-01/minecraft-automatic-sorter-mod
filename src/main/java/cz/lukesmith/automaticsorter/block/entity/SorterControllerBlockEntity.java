@@ -37,6 +37,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     private static final int MAX_TICKER = 5;
     private double overflow = 0;
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
+    private double upgradeSpeedPerItem = 0.2;
 
     public SorterControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY, pos, state);
@@ -76,6 +77,14 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     @Override
     public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
         return new SorterControllerScreenHandler(syncId, playerInventory, this.pos);
+    }
+
+    public int getAmplifierCount() {
+        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
+            return this.getStack(0).getCount();
+        }
+
+        return 0;
     }
 
     private static int tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter, int maxTransfer) {
@@ -188,6 +197,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
     }
 
+    public double getUpgradeSpeedPerItem() {
+        return this.upgradeSpeedPerItem;
+    }
+
     public void tick(World world, BlockPos pos, BlockState state) {
         if (world.isClient) {
             return;
@@ -198,10 +211,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
-        int upgradeCount = 0;
-        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
-            upgradeCount = this.getStack(0).getCount();
-        }
+        int upgradeCount = this.getAmplifierCount();
 
         double speed = 1 + (0.2 * upgradeCount);
         int maxTransfer = (int) Math.floor(speed + overflow);

@@ -22,7 +22,6 @@ public class SorterControllerScreen extends HandledScreen<SorterControllerScreen
 
     private static final Identifier TEXTURE = Identifier.of(AutomaticSorter.MOD_ID, "textures/gui/sorter_controller.png");
 
-
     public SorterControllerScreen(SorterControllerScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
@@ -41,6 +40,15 @@ public class SorterControllerScreen extends HandledScreen<SorterControllerScreen
         context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0f, 0f, backgroundWidth, backgroundHeight, 176, 166);
     }
 
+    @Override
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
+        super.drawForeground(context, mouseX, mouseY);
+
+        String upgradeText = Text.translatable("automaticsorter.screen_text.speed_boost").getString() + ": " + handler.getSpeedBoostText();
+        int textWidth = textRenderer.getWidth(upgradeText);
+        int x = (backgroundWidth - textWidth) / 2;
+        context.drawText(this.textRenderer, upgradeText, x, 20, -12566464, false);
+    }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {

@@ -7,5 +7,6 @@
   "automaticsroter.filter_mode.whitelist": "Whitelist",
   "automaticsroter.filter_mode.in_inventory": "In Inventory",
   "automaticsorter.filter_mode.rejects": "Rejects",
-  "item.automaticsorter.sorter_amplifier": "Sorter Amplifier"
+  "item.automaticsorter.sorter_amplifier": "Sorter Amplifier",
+  "automaticsorter.screen_text.speed_boost": "Speed Boost"
 }
