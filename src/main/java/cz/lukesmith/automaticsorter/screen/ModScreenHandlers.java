@@ -20,6 +20,10 @@ public class ModScreenHandlers {
 
     public static void registerScreenHandlers() {
         AutomaticSorter.LOGGER.info("Registering Screen Handlers for " + AutomaticSorter.MOD_ID);
+    }
+
+    public static void registerClientScreenHandlers() {
+        AutomaticSorter.LOGGER.info("Registering Client Screen Handlers for " + AutomaticSorter.MOD_ID);
         HandledScreens.register(ModScreenHandlers.FILTER_SCREEN_HANDLER, FilterScreen::new);
         HandledScreens.register(ModScreenHandlers.SORTER_CONTROLLER_SCREEN_HANDLER, SorterControllerScreen::new);
     }

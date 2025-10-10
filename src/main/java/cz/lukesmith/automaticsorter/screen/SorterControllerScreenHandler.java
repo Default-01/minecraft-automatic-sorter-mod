@@ -85,6 +85,11 @@ public class SorterControllerScreenHandler extends ScreenHandler {
     }
 
     public String getSpeedBoostText() {
-        return Math.round(blockEntity.getAmplifierCount() * blockEntity.getUpgradeSpeedPerItem() * 100) + "%";
+        double speed = blockEntity.getSpeedPerSecond();
+        if (speed == Double.MAX_VALUE) {
+            return "∞";
+        }
+
+        return String.format("%.2f", speed);
     }
 }

@@ -1,9 +1,9 @@
 package cz.lukesmith.automaticsorter.block.entity;
 
-import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
 import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
+import cz.lukesmith.automaticsorter.config.ModConfig;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
@@ -36,7 +36,6 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     private static final int MAX_TICKER = 5;
     private double overflow = 0;
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
-    private double upgradeSpeedPerItem = 0.2;
 
     public SorterControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY, pos, state);
@@ -76,14 +75,6 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     @Override
     public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
         return new SorterControllerScreenHandler(syncId, playerInventory, this.pos);
-    }
-
-    public int getAmplifierCount() {
-        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
-            return this.getStack(0).getCount();
-        }
-
-        return 0;
     }
 
     private static int tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter, int maxTransfer) {
@@ -196,8 +187,28 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
     }
 
-    public double getUpgradeSpeedPerItem() {
-        return this.upgradeSpeedPerItem;
+
+    private int getAmplifierCount() {
+        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
+            return this.getStack(0).getCount();
+        }
+
+        return 0;
+    }
+
+    public double getSpeedPerSecond() {
+        if (ModConfig.get().instantSort) {
+            return Double.MAX_VALUE;
+        }
+
+        double baseSpeed = ModConfig.get().baseSortingSpeed;
+        double speedBoost = getAmplifierCount() * ModConfig.get().baseSpeedBoostPerUpgrade;
+
+        return baseSpeed + speedBoost;
+    }
+
+    public double getSpeedPerTick() {
+        return getSpeedPerSecond() / 20.0;
     }
 
     public void tick(World world, BlockPos pos, BlockState state) {
@@ -210,9 +221,13 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
-        double speed = 1 + (0.1 * this.getAmplifierCount());
+        double speed = getSpeedPerTick() * MAX_TICKER;
         int maxTransfer = (int) Math.floor(speed + overflow);
         overflow = (speed + overflow) - maxTransfer;
+
+        if (ModConfig.get().instantSort && overflow != 0) {
+            overflow = 0;
+        }
 
         Set<BlockPos> visited = new HashSet<>();
         Direction facing = world.getBlockState(pos).get(SorterControllerBlock.FACING);

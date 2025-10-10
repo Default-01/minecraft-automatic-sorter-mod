@@ -44,7 +44,7 @@ public class SorterControllerScreen extends HandledScreen<SorterControllerScreen
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         super.drawForeground(context, mouseX, mouseY);
 
-        String upgradeText = Text.translatable("automaticsorter.screen_text.speed_boost").getString() + ": " + handler.getSpeedBoostText();
+        String upgradeText = Text.translatable("automaticsorter.screen_text.sorting_speed").getString() + ": " + handler.getSpeedBoostText();
         int textWidth = textRenderer.getWidth(upgradeText);
         int x = (backgroundWidth - textWidth) / 2;
         context.drawText(this.textRenderer, upgradeText, x, 20, -12566464, false);
