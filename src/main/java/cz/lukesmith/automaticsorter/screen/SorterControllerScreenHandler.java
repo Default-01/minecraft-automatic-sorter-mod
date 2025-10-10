@@ -21,7 +21,7 @@ public class SorterControllerScreenHandler extends ScreenHandler {
 
 
     public SorterControllerScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
-        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
+        this(syncId, inventory, inventory.player.getEntityWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
     }
 
     public SorterControllerScreenHandler(int syncId, PlayerInventory playerInventory,

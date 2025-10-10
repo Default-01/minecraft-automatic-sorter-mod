@@ -21,7 +21,7 @@ public class FilterScreenHandler extends ScreenHandler {
 
 
     public FilterScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
-        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
+        this(syncId, inventory, inventory.player.getEntityWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
     }
 
     public FilterScreenHandler(int syncId, PlayerInventory playerInventory,

@@ -29,7 +29,7 @@ public class NetworkHandler {
             BlockPos blockPos = payload.blockPos();
             int filterType = payload.filterType();
             context.server().execute(() -> {
-                if (context.player().getWorld().getBlockEntity(blockPos) instanceof FilterBlockEntity filterBlockEntity) {
+                if (context.player().getEntityWorld().getBlockEntity(blockPos) instanceof FilterBlockEntity filterBlockEntity) {
                     filterBlockEntity.setFilterType(filterType);
                     filterBlockEntity.markDirty();
                 }

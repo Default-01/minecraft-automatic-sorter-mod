@@ -212,7 +212,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
     }
 
     public void tick(World world, BlockPos pos, BlockState state) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return;
         }
 

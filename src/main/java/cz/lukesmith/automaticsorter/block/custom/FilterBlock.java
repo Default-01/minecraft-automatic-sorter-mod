@@ -121,7 +121,7 @@ public class FilterBlock extends BlockWithEntity implements BlockEntityProvider 
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
+        if (!world.isClient()) {
             NamedScreenHandlerFactory screenHandlerFactory = ((FilterBlockEntity) world.getBlockEntity(pos));
 
             if (screenHandlerFactory != null) {

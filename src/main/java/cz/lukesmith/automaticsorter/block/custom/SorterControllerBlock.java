@@ -78,7 +78,7 @@ public class SorterControllerBlock extends BlockWithEntity implements BlockEntit
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
+        if (!world.isClient()) {
             NamedScreenHandlerFactory screenHandlerFactory = ((SorterControllerBlockEntity) world.getBlockEntity(pos));
 
             if (screenHandlerFactory != null) {

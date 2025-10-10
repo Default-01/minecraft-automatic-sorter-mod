@@ -99,7 +99,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     }
 
     public void tick(World world, BlockPos pos, BlockState state) {
-        if (world.isClient) {
+        if (world.isClient()) {
             // Tick metoda se neprovádí na klientské straně
         }
     }
