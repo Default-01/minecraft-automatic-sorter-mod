@@ -239,10 +239,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
 
             IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.offset(facing));
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
-            int itemsTransfered = 0;
+            int itemsLeftToTransfer = maxTransfer;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
 
-            while (!queue.isEmpty() && (itemsTransfered < maxTransfer) && !noInventoryRootChest) {
+            while (!queue.isEmpty() && (itemsLeftToTransfer >= 0) && !noInventoryRootChest) {
                 BlockPos currentPos = queue.poll();
                 if (visited.contains(currentPos)) {
                     continue;
@@ -267,8 +267,8 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                                 continue;
                             }
 
-                            itemsTransfered -= tryToTransferItem(world, filterBlockEntity, neighborPos, rootInventoryAdapter, maxTransfer - itemsTransfered);
-                            if (itemsTransfered >= maxTransfer) {
+                            itemsLeftToTransfer = tryToTransferItem(world, filterBlockEntity, neighborPos, rootInventoryAdapter, itemsLeftToTransfer);
+                            if (itemsLeftToTransfer >= 0) {
                                 break;
                             }
                         }
@@ -276,10 +276,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
                 }
             }
 
-            if (itemsTransfered < maxTransfer) {
+            if (itemsLeftToTransfer >= 0) {
                 for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                    itemsTransfered -= tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter, maxTransfer - itemsTransfered);
-                    if (itemsTransfered >= maxTransfer) {
+                    itemsLeftToTransfer = tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter, itemsLeftToTransfer);
+                    if (itemsLeftToTransfer >= 0) {
                         break;
                     }
                 }
