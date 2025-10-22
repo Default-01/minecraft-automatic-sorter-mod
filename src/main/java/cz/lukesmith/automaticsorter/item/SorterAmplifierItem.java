@@ -1,10 +1,10 @@
 package cz.lukesmith.automaticsorter.item;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 public class SorterAmplifierItem extends Item {
 
-    public SorterAmplifierItem(Settings settings) {
+    public SorterAmplifierItem(Properties settings) {
         super(settings);
     }
 }

@@ -1,11 +1,17 @@
 package cz.lukesmith.automaticsorter.network;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
+import cz.lukesmith.automaticsorter.config.ModConfig;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.SimpleChannel;
 
-
+@Mod.EventBusSubscriber
 public class NetworkHandler {
     private static final String CHANNEL_NAME = "main";
     public static final SimpleChannel CHANNEL = ChannelBuilder.named(ResourceLocation.tryBuild(AutomaticSorter.MOD_ID, CHANNEL_NAME))
@@ -14,57 +20,42 @@ public class NetworkHandler {
     private static int packetId = 0;
 
     public static void register() {
-        CHANNEL.messageBuilder(FilterTypePacket.class, packetId++)
+        CHANNEL.messageBuilder(FilterTypePacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(FilterTypePacket::encode)
                 .decoder(FilterTypePacket::decode)
                 .consumer(FilterTypePacket::handle)
                 .add();
-    }
 
-    // new 1.4.0
-
-    public static void register() {
-        PayloadTypeRegistry.playC2S().register(FilterTypePayload.ID, FilterTypePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(FilterTypePayload.ID, FilterTypePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ModConfigSyncPayload.ID, ModConfigSyncPayload.CODEC);
+        CHANNEL.messageBuilder(ModConfigSyncPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ModConfigSyncPacket::encode)
+                .decoder(ModConfigSyncPacket::decode)
+                .consumerMainThread(ModConfigSyncPacket::handle)
+                .add();
     }
 
     public static void registerClient() {
-        ClientPlayNetworking.registerGlobalReceiver(FilterTypePayload.ID, (payload, context) -> {});
-        ClientPlayNetworking.registerGlobalReceiver(ModConfigSyncPayload.ID, (payload, context) -> {
-            payload.applyClient();
-        });
+        /*CHANNEL.messageBuilder(ModConfigSyncPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ModConfigSyncPacket::encode)
+                .decoder(ModConfigSyncPacket::decode)
+                .consumerMainThread(ModConfigSyncPacket::handle)
+                .add();*/
     }
 
-    public static void registerServer() {
-        ServerPlayNetworking.registerGlobalReceiver(FilterTypePayload.ID, (payload, context) -> {
-            BlockPos blockPos = payload.blockPos();
-            int filterType = payload.filterType();
-            context.server().execute(() -> {
-                if (context.player().getWorld().getBlockEntity(blockPos) instanceof FilterBlockEntity filterBlockEntity) {
-                    filterBlockEntity.setFilterType(filterType);
-                    filterBlockEntity.markDirty();
-                }
-            });
-        });
-    }
-
-    public static void sendWhenJoin() {
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            NetworkHandler.sendConfigTo(handler.player);
-        });
-    }
-
-    public static void sendConfigTo(ServerPlayerEntity player) {
+    public static void sendConfigTo(ServerPlayer player) {
         var config = ModConfig.get();
-        var payload = new ModConfigSyncPayload(
+        var packet = new ModConfigSyncPacket(
                 config.baseSortingSpeed,
                 config.baseSpeedBoostPerUpgrade,
                 config.instantSort
         );
-        ServerPlayNetworking.send(player, payload);
+
+        NetworkHandler.CHANNEL.send(packet, player.connection.getConnection());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            sendConfigTo(player);
+        }
     }
 }
-
-
-

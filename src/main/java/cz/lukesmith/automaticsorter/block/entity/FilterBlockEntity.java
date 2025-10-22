@@ -141,11 +141,8 @@ public class FilterBlockEntity extends BlockEntity implements MenuProvider {
         super.loadAdditional(pInput);
         NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(pInput, items);
-        System.out.println("Slots count: " + inventory.getSlots());
-        System.out.println("Items size: " + items.size());
 
         for (int i = 0; i < inventory.getSlots(); i++) {
-            System.out.println("Setting slot " + i + " with item: " + items.get(i));
             inventory.setStackInSlot(i, items.get(i));
         }
 

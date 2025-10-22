@@ -1,32 +1,37 @@
 package cz.lukesmith.automaticsorter.block.custom;
 
 import com.mojang.serialization.MapCodec;
+import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public class SorterControllerBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
-
-    // new 1.4.0
-    /*
-    private static final VoxelShape SHAPE = createCuboidShape(0, 0, 0, 16, 16, 16);
-    public static final EnumProperty<Direction> FACING;
-
-    static {
-        FACING = FacingBlock.FACING;
-    }*/
+    public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
 
 
     @Override
@@ -37,8 +42,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
     public SorterControllerBlock(Properties settings) {
         super(settings);
 
-        // new 1.4.0
-        this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.UP));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.UP));
     }
 
     @Override
@@ -47,7 +51,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
+    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
         return new SorterControllerBlockEntity(pPos, pState);
     }
 
@@ -61,27 +65,27 @@ public class SorterControllerBlock extends BaseEntityBlock {
                 (level, blockPos, blockState, sorterControllerBlockEntity) -> sorterControllerBlockEntity.tick(level, blockPos, blockState));
     }
 
-    // new 1.4.0
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            NamedScreenHandlerFactory screenHandlerFactory = ((SorterControllerBlockEntity) world.getBlockEntity(pos));
-
-            if (screenHandlerFactory != null) {
-                player.openHandledScreen(screenHandlerFactory);
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!world.isClientSide) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof SorterControllerBlockEntity sorterControllerBlockEntity) {
+                ((ServerPlayer) player).openMenu(new SimpleMenuProvider(sorterControllerBlockEntity, Component.translatable("block.automaticsorter.sorter_controller")), pos);
+            } else {
+                throw new IllegalStateException("Our Container provider is missing!");
             }
         }
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+        pBuilder.add(FACING);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getSide().getOpposite());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
+        return this.defaultBlockState().setValue(FACING, pContext.getClickedFace().getOpposite());
     }
 }

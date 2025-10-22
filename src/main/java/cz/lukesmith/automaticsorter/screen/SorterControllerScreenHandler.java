@@ -1,84 +1,101 @@
 package cz.lukesmith.automaticsorter.screen;
 
+import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.SlotItemHandler;
 
-public class SorterControllerScreenHandler extends ScreenHandler {
+public class SorterControllerScreenHandler extends AbstractContainerMenu {
 
-    private final Inventory inventory;
-    public final SorterControllerBlockEntity blockEntity;
-    private final int inventorySize = 1;
+    private final SorterControllerBlockEntity blockEntity;
+    private final Level level;
+
+    private static final int HOTBAR_SLOT_COUNT = 9;
+    private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
+    private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
+    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
+    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
+    private static final int VANILLA_FIRST_SLOT_INDEX = 0;
+    private static final int FILTER_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+    private static final int FILTER_INVENTORY_SLOT_COUNT = 1;
 
 
-    public SorterControllerScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
-        this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
+    public SorterControllerScreenHandler(int syncId, Inventory inventory, FriendlyByteBuf extraData) {
+        this(syncId, inventory, inventory.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    public SorterControllerScreenHandler(int syncId, PlayerInventory playerInventory,
-                                         BlockEntity blockEntity, PropertyDelegate propertyDelegate) {
-        super(ModScreenHandlers.SORTER_CONTROLLER_SCREEN_HANDLER, syncId);
-        checkSize(((Inventory) blockEntity), inventorySize);
-        this.inventory = ((Inventory) blockEntity);
-        inventory.onOpen(playerInventory.player);
-        this.blockEntity = ((SorterControllerBlockEntity) blockEntity);
+    public SorterControllerScreenHandler(int containerId, Inventory playerInventory, BlockEntity blockEntity) {
+        super(ModScreenHandlers.SORTER_CONTROLLER_SCREEN_HANDLER.get(), containerId);
 
-        this.addSlot(new Slot(this.inventory, 0, 80, 33));
+        if (!(blockEntity instanceof SorterControllerBlockEntity sorterControllerBlockEntity))
+            throw new IllegalStateException("Invalid block entity at container open");
+
+
+        this.blockEntity = sorterControllerBlockEntity;
+        this.level = playerInventory.player.level();
+
+        ItemStackHandler inventory = this.blockEntity.getInventory();
+
+        this.addSlot(new SlotItemHandler(inventory, 0, 80, 33));
 
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
-
-        addProperties(propertyDelegate);
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int invSlot) {
-        ItemStack newStack = ItemStack.EMPTY;
-        Slot slot = this.slots.get(invSlot);
-        if (slot != null && slot.hasStack()) {
-            ItemStack originalStack = slot.getStack();
-            newStack = originalStack.copy();
-            if (invSlot < this.inventory.size()) {
-                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
+    public ItemStack quickMoveStack(Player player, int index) {
+        Slot sourceSlot = this.slots.get(index);
+        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
+
+        ItemStack sourceStack = sourceSlot.getItem();
+        ItemStack copy = sourceStack.copy();
+
+        if (index < VANILLA_SLOT_COUNT) {
+            // Z hráče do blockEntity
+            if (!moveItemStackTo(sourceStack, FILTER_INVENTORY_FIRST_SLOT_INDEX, FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
-
-            if (originalStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
-            } else {
-                slot.markDirty();
+        } else if (index < FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT) {
+            // Z blockEntity do hráče
+            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+                return ItemStack.EMPTY;
             }
+        } else {
+            return ItemStack.EMPTY;
         }
 
-        return newStack;
+        if (sourceStack.isEmpty()) {
+            sourceSlot.set(ItemStack.EMPTY);
+        } else {
+            sourceSlot.setChanged();
+        }
+
+        sourceSlot.onTake(player, sourceStack);
+        return copy;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+    public boolean stillValid(Player pPlayer) {
+        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), pPlayer, ModBlocks.FILTER_BLOCK.get());
     }
 
-    private void addPlayerInventory(PlayerInventory playerInventory) {
-        for (int i = 0; i < 3; ++i) {
-            for (int l = 0; l < 9; ++l) {
-                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
+    private void addPlayerInventory(Inventory playerInventory) {
+        for (int row = 0; row < 3; ++row) {
+            for (int col = 0; col < 9; ++col) {
+                this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
             }
         }
     }
 
-    private void addPlayerHotbar(PlayerInventory playerInventory) {
+    private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }

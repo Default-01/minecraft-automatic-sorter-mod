@@ -17,9 +17,9 @@ public class ModScreenHandlers {
             MENUS.register("filter_screen",
                     () -> IForgeMenuType.create(FilterScreenHandler::new));
 
-    public static final ScreenHandlerType<SorterControllerScreenHandler> SORTER_CONTROLLER_SCREEN_HANDLER =
-            Registry.register(Registries.SCREEN_HANDLER, Identifier.of(AutomaticSorter.MOD_ID, "sorter_controller"),
-                    new ExtendedScreenHandlerType<>(SorterControllerScreenHandler::new, BlockPos.PACKET_CODEC));
+    public static final RegistryObject<MenuType<SorterControllerScreenHandler>> SORTER_CONTROLLER_SCREEN_HANDLER =
+            MENUS.register("sorter_controller_screen",
+                    () -> IForgeMenuType.create(SorterControllerScreenHandler::new));
 
 
     public static void register(BusGroup eventBus) {

@@ -3,11 +3,13 @@ package cz.lukesmith.automaticsorter;
 import com.mojang.logging.LogUtils;
 import cz.lukesmith.automaticsorter.block.ModBlocks;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
+import cz.lukesmith.automaticsorter.command.ModCommands;
 import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
 import cz.lukesmith.automaticsorter.network.NetworkHandler;
 import cz.lukesmith.automaticsorter.screen.FilterScreen;
 import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
+import cz.lukesmith.automaticsorter.screen.SorterControllerScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -51,12 +53,6 @@ public class AutomaticSorter {
         // Networking
         NetworkHandler.register();
 
-        // New 1.4.0
-        ModCommands.register();
-        NetworkHandler.register();
-        NetworkHandler.registerServer();
-        NetworkHandler.sendWhenJoin();
-
         // Config
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
@@ -80,6 +76,8 @@ public class AutomaticSorter {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             MenuScreens.register(ModScreenHandlers.FILTER_SCREEN_HANDLER.get(), FilterScreen::new);
+            MenuScreens.register(ModScreenHandlers.SORTER_CONTROLLER_SCREEN_HANDLER.get(), SorterControllerScreen::new);
+            NetworkHandler.registerClient();
         }
     }
 }

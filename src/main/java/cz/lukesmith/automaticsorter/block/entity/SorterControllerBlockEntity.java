@@ -2,29 +2,40 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
+import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
+import cz.lukesmith.automaticsorter.config.ModConfig;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryAdapters.NoInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.inventoryUtils.MainInventoryUtil;
+import cz.lukesmith.automaticsorter.item.ModItems;
+import cz.lukesmith.automaticsorter.screen.SorterControllerScreenHandler;
 import net.minecraft.core.*;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-// new 1.4.0
-// implements ExtendedScreenHandlerFactory
-public class SorterControllerBlockEntity extends BlockEntity {
+public class SorterControllerBlockEntity extends BlockEntity implements MenuProvider {
 
     private int ticker = 0;
     private static final int MAX_TICKER = 5;
     private double overflow = 0;
-    private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
+    private final ItemStackHandler inventory = new ItemStackHandler(1);
 
     public SorterControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SORTER_CONTROLLER_BLOCK_ENTITY.get(), pos, state);
@@ -34,44 +45,45 @@ public class SorterControllerBlockEntity extends BlockEntity {
         return new SorterControllerBlockEntity(pos, state);
     }
 
-    // new 1.4.0
-    // funkce menu
-
-    @Override
-    public DefaultedList<ItemStack> getItems() {
+    public ItemStackHandler getInventory() {
         return inventory;
     }
 
     @Override
-    protected void writeData(WriteView view) {
-        super.writeData(view);
-        Inventories.writeData(view, this.inventory);
+    protected void loadAdditional(ValueInput pInput) {
+        super.loadAdditional(pInput);
+        NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(pInput, items);
+
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inventory.setStackInSlot(i, items.get(i));
+        }
+
+        this.setChanged();
     }
 
     @Override
-    protected void readData(ReadView view) {
-        super.readData(view);
-        Inventories.readData(view, this.inventory);
+    protected void saveAdditional(ValueOutput pOutput) {
+        super.saveAdditional(pOutput);
+        NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            items.set(i, inventory.getStackInSlot(i));
+        }
+
+        ContainerHelper.saveAllItems(pOutput, items);
     }
 
     @Override
-    public BlockPos getScreenOpeningData(ServerPlayerEntity serverPlayerEntity) {
-        return this.pos;
+    public Component getDisplayName() {
+        return Component.translatable("block.automaticsorter.sorter_controller");
     }
 
     @Override
-    public Text getDisplayName() {
-        return Text.translatable("block.automaticsorter.sorter_controller");
+    public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return new SorterControllerScreenHandler(pContainerId, pPlayerInventory, this);
     }
 
-    @Override
-    public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return new SorterControllerScreenHandler(syncId, playerInventory, this.pos);
-    }
-
-    // ---
-
-    private static boolean tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter) {
+    private static int tryWhitelistMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, IInventoryAdapter filterInventoryAdapter, int maxTransfer) {
         if (rootInventoryAdapter.isEmpty()) {
             return maxTransfer;
         }
@@ -184,8 +196,8 @@ public class SorterControllerBlockEntity extends BlockEntity {
 
 
     private int getAmplifierCount() {
-        if (!this.getStack(0).isEmpty() && this.getStack(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
-            return this.getStack(0).getCount();
+        if (!this.inventory.getStackInSlot(0).isEmpty() && this.inventory.getStackInSlot(0).getItem().equals(ModItems.SORTER_AMPLIFIER)) {
+            return this.inventory.getStackInSlot(0).getCount();
         }
 
         return 0;
@@ -225,22 +237,14 @@ public class SorterControllerBlockEntity extends BlockEntity {
         }
 
         Set<BlockPos> visited = new HashSet<>();
-        // -- old
-        BlockPos belowPos = pos.below();
-        // new 1.4.0
-        Direction facing = world.getBlockState(pos).get(SorterControllerBlock.FACING);
-        BlockPos nextPos = pos.offset(facing.getOpposite());
-        // --
+        Direction facing = world.getBlockState(pos).getValue(SorterControllerBlock.FACING);
+        BlockPos nextPos = pos.offset(facing.getOpposite().getUnitVec3i());
 
         if ((world.getBlockState(nextPos).getBlock() instanceof PipeBlock)) {
             Queue<BlockPos> queue = new LinkedList<>();
             queue.add(nextPos);
 
-            // -- old
-            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.above());
-            // new 1.4.0
-            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.offset(facing));
-            // --
+            IInventoryAdapter rootInventoryAdapter = MainInventoryUtil.getInventoryAdapter(world, pos.offset(facing.getUnitVec3i()));
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
             int itemsLeftToTransfer = maxTransfer;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
@@ -281,21 +285,12 @@ public class SorterControllerBlockEntity extends BlockEntity {
             }
 
             if (itemsLeftToTransfer >= 0) {
-                // -- old
                 for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                    if (tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getBlockPos(), rootInventoryAdapter)) {
-                        break;
-                    }
-                }
-
-                // new 1.4.0
-                for (FilterBlockEntity filterBlockEntity : rejectedFilters) {
-                    itemsLeftToTransfer = tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getPos(), rootInventoryAdapter, itemsLeftToTransfer);
+                    itemsLeftToTransfer = tryToTransferItem(world, filterBlockEntity, filterBlockEntity.getBlockPos(), rootInventoryAdapter, itemsLeftToTransfer);
                     if (itemsLeftToTransfer >= 0) {
                         break;
                     }
                 }
-                // --
             }
         }
 

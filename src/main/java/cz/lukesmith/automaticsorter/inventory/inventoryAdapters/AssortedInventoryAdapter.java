@@ -46,8 +46,8 @@ public class AssortedInventoryAdapter implements IInventoryAdapter {
         int transferred = 0;
         for (int i = 0; i < size && transferred < toTransfer; i++) {
             ItemStack stack = itemStacks.get(i);
-            if (canCombineStacks(stack, itemStack) && stack.getCount() < stack.getMaxCount()) {
-                int canAdd = Math.min(toTransfer - transferred, stack.getMaxCount() - stack.getCount());
+            if (canCombineStacks(stack, itemStack) && stack.getCount() < stack.getMaxStackSize()) {
+                int canAdd = Math.min(toTransfer - transferred, stack.getMaxStackSize() - stack.getCount());
                 ItemStack addStack = itemStack.copyWithCount(canAdd);
                 insertItem(i, addStack);
                 transferred += canAdd;

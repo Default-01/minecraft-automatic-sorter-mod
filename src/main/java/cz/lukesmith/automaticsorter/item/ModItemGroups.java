@@ -23,9 +23,7 @@ public class ModItemGroups {
                         output.accept(ModBlocks.PIPE_BLOCK.get());
                         output.accept(ModBlocks.SORTER_CONTROLLER_BLOCK.get());
                         output.accept(ModBlocks.FILTER_BLOCK.get());
-
-                        // new 1.4.0
-                        output.accept(ModItems.newsasd);
+                        output.accept(ModItems.SORTER_AMPLIFIER.get());
                     })
                     .build());
 
