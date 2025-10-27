@@ -2,6 +2,7 @@ package cz.lukesmith.automaticsorter.network;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
 import cz.lukesmith.automaticsorter.config.ModConfig;
+import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -49,6 +50,10 @@ public class NetworkHandler {
                 config.instantSort
         );
 
+        System.out.println("Sending config to player " + player.getName().getString() +
+                ": baseSortingSpeed=" + config.baseSortingSpeed +
+                ", baseSpeedBoostPerUpgrade=" + config.baseSpeedBoostPerUpgrade +
+                ", instantSort=" + config.instantSort);
         NetworkHandler.CHANNEL.send(packet, player.connection.getConnection());
     }
 

@@ -20,8 +20,8 @@ public class ModConfigSyncPacket {
     }
 
     public static void encode(ModConfigSyncPacket msg, FriendlyByteBuf buf) {
-        buf.writeDouble(msg.baseSpeedBoostPerUpgrade);
         buf.writeDouble(msg.baseSortingSpeed);
+        buf.writeDouble(msg.baseSpeedBoostPerUpgrade);
         buf.writeBoolean(msg.instantSort);
     }
 

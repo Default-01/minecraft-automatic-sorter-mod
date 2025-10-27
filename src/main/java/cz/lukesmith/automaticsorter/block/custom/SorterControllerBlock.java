@@ -1,7 +1,6 @@
 package cz.lukesmith.automaticsorter.block.custom;
 
 import com.mojang.serialization.MapCodec;
-import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -32,6 +31,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
     public static final EnumProperty<Direction> FACING = EnumProperty.create("facing", Direction.class);
+    public static final MapCodec<SorterControllerBlock> CODEC = simpleCodec(SorterControllerBlock::new);
 
 
     @Override
@@ -47,7 +47,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return null;
+        return CODEC;
     }
 
     @Override

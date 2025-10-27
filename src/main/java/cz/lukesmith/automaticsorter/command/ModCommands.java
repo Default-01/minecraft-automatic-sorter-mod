@@ -23,7 +23,8 @@ public class ModCommands {
                 .then(Commands.argument("value", DoubleArgumentType.doubleArg(0, Double.MAX_VALUE))
                         .executes(ctx -> {
                             double value = DoubleArgumentType.getDouble(ctx, "value");
-                            ModConfig.get().baseSortingSpeed = value;
+                            ModConfig config = ModConfig.get();
+                            config.baseSortingSpeed = value;
                             ModConfig.save();
                             ctx.getSource().sendSuccess(() -> Component.translatable("message.automaticsorter.basespeed_set", value), true);
                             sendSyncConfigPacketToAllPlayers(ctx);
@@ -35,7 +36,8 @@ public class ModCommands {
                 .then(Commands.argument("value", DoubleArgumentType.doubleArg(0, Double.MAX_VALUE))
                         .executes(ctx -> {
                             double value = DoubleArgumentType.getDouble(ctx, "value");
-                            ModConfig.get().baseSpeedBoostPerUpgrade = value;
+                            ModConfig config = ModConfig.get();
+                            config.baseSpeedBoostPerUpgrade = value;
                             ModConfig.save();
                             ctx.getSource().sendSuccess(() -> Component.translatable("message.automaticsorter.basespeedboost_set", value), true);
                             sendSyncConfigPacketToAllPlayers(ctx);
@@ -47,7 +49,8 @@ public class ModCommands {
                 .then(Commands.argument("value", BoolArgumentType.bool())
                         .executes(ctx -> {
                             boolean value = BoolArgumentType.getBool(ctx, "value");
-                            ModConfig.get().instantSort = value;
+                            ModConfig config = ModConfig.get();
+                            config.instantSort = value;
                             ModConfig.save();
                             ctx.getSource().sendSuccess(() -> Component.translatable("message.automaticsorter.instantsort_set", value ? "true" : "false"), true);
                             sendSyncConfigPacketToAllPlayers(ctx);

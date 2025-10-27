@@ -43,7 +43,7 @@ public class ModConfig {
 
     public static void save() {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-            GSON.toJson(INSTANCE, writer);
+            GSON.toJson(get(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }

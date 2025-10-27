@@ -1,7 +1,6 @@
 package cz.lukesmith.automaticsorter.screen;
 
 import cz.lukesmith.automaticsorter.block.ModBlocks;
-import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.SorterControllerBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,8 +23,8 @@ public class SorterControllerScreenHandler extends AbstractContainerMenu {
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
-    private static final int FILTER_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-    private static final int FILTER_INVENTORY_SLOT_COUNT = 1;
+    private static final int SORTER_CONTROLLER_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+    private static final int SORTER_CONTROLLER_INVENTORY_SLOT_COUNT = 1;
 
 
     public SorterControllerScreenHandler(int syncId, Inventory inventory, FriendlyByteBuf extraData) {
@@ -60,10 +59,10 @@ public class SorterControllerScreenHandler extends AbstractContainerMenu {
 
         if (index < VANILLA_SLOT_COUNT) {
             // Z hráče do blockEntity
-            if (!moveItemStackTo(sourceStack, FILTER_INVENTORY_FIRST_SLOT_INDEX, FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT, false)) {
+            if (!moveItemStackTo(sourceStack, SORTER_CONTROLLER_INVENTORY_FIRST_SLOT_INDEX, SORTER_CONTROLLER_INVENTORY_FIRST_SLOT_INDEX + SORTER_CONTROLLER_INVENTORY_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
-        } else if (index < FILTER_INVENTORY_FIRST_SLOT_INDEX + FILTER_INVENTORY_SLOT_COUNT) {
+        } else if (index < SORTER_CONTROLLER_INVENTORY_FIRST_SLOT_INDEX + SORTER_CONTROLLER_INVENTORY_SLOT_COUNT) {
             // Z blockEntity do hráče
             if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
@@ -84,7 +83,7 @@ public class SorterControllerScreenHandler extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player pPlayer) {
-        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), pPlayer, ModBlocks.FILTER_BLOCK.get());
+        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), pPlayer, ModBlocks.SORTER_CONTROLLER_BLOCK.get());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

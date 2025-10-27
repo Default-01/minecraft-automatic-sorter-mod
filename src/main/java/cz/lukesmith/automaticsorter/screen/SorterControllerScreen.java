@@ -32,10 +32,16 @@ public class SorterControllerScreen extends AbstractContainerScreen<SorterContro
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        String upgradeText = Component.translatable("automaticsorter.screen_text.sorting_speed").getString() + ": " + menu.getSpeedBoostText();
+        super.renderLabels(guiGraphics, mouseX, mouseY);
+
+        String upgradeText = Component.translatable("automaticsorter.screen_text.sorting_speed")
+                .getString() + ": " + menu.getSpeedBoostText();
+
         int textWidth = this.font.width(upgradeText);
         int x = (this.imageWidth - textWidth) / 2;
-        guiGraphics.drawString(this.font, upgradeText, x, 20, 0x333333, false);
+
+        // Pozor: souřadnice jsou relativní vůči levému hornímu rohu GUI (0,0)
+        guiGraphics.drawString(this.font, upgradeText, x, 20, -12566464, false);
     }
 
 
