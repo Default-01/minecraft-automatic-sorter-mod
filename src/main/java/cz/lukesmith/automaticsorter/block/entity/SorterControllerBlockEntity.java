@@ -219,7 +219,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements MenuProv
     }
 
     public void tick(Level world, BlockPos pos, BlockState state) {
-        if (world.isClientSide) {
+        if (world.isClientSide()) {
             return;
         }
 

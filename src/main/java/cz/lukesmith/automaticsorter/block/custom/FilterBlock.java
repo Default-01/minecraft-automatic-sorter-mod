@@ -136,7 +136,7 @@ public class FilterBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof FilterBlockEntity filterBlockEntity) {
                 ((ServerPlayer) player).openMenu(new SimpleMenuProvider(filterBlockEntity, Component.literal("block.automaticsorter.filter")), pos);

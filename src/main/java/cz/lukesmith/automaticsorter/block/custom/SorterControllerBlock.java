@@ -67,7 +67,7 @@ public class SorterControllerBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof SorterControllerBlockEntity sorterControllerBlockEntity) {
                 ((ServerPlayer) player).openMenu(new SimpleMenuProvider(sorterControllerBlockEntity, Component.translatable("block.automaticsorter.sorter_controller")), pos);
