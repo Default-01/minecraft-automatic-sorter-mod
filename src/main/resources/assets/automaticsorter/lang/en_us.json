@@ -12,5 +12,6 @@
 
   "message.automaticsorter.basespeed_set": "Base sorting speed set to %s items per second",
   "message.automaticsorter.basespeedboost_set": "Base speed boost per upgrade set to %s items per second",
-  "message.automaticsorter.instantsort_set": "Instant sort set to %s"
+  "message.automaticsorter.instantsort_set": "Instant sort set to %s",
+  "message.automaticsorter.objects_detected": "Objects detected: %s"
 }
