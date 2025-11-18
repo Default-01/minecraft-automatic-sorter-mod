@@ -16,8 +16,8 @@ public class NoInventoryAdapter implements IInventoryAdapter {
     }
 
     @Override
-    public boolean addItem(ItemStack itemStack) {
-        return false;
+    public int addItem(ItemStack itemStack, int maxAmount) {
+        return 0;
     }
 
     @Override
