@@ -70,10 +70,11 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             return;
         }
 
-        Set<BlockPos> connectedPipes = findConnectedPipes(world, pos);
+        Set<BlockPos> connectedPipes = findConnectedPipes(world, pos, state);
         Set<BlockPos> connectedFilters = findConnectedFilters(world, connectedPipes);
 
-        BlockPos rootChestPos = pos.up();
+        Direction facing = state.get(cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock.FACING);
+        BlockPos rootChestPos = pos.offset(facing);
 
         Inventory rootChestInventory = getInventoryFromPosition(world, rootChestPos);
         if (rootChestInventory != null) {
@@ -195,9 +196,10 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         return item;
     }
 
-    private static Set<BlockPos> findConnectedPipes(World world, BlockPos startPos) {
+    private static Set<BlockPos> findConnectedPipes(World world, BlockPos startPos, BlockState controllerState) {
         Set<BlockPos> visited = new HashSet<>();
-        BlockPos belowPos = startPos.down();
+        Direction facing = controllerState.get(cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock.FACING);
+        BlockPos belowPos = startPos.offset(facing.getOpposite());
 
         if (!(world.getBlockState(belowPos).getBlock() instanceof PipeBlock)) {
             return visited;
