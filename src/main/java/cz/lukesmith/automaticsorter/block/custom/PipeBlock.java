@@ -86,8 +86,9 @@ public class PipeBlock extends Block {
     }
 
     private boolean isConnectedToNeighbor(BlockState neighborState, Direction direction) {
-        if (direction == Direction.UP && neighborState.getBlock() instanceof SorterControllerBlock) {
-            return true;
+        if (neighborState.getBlock() instanceof SorterControllerBlock) {
+            Direction controllerFacing = neighborState.get(SorterControllerBlock.FACING);
+            return direction == controllerFacing;
         } else if (neighborState.getBlock() instanceof FilterBlock) {
             Direction filterFacing = neighborState.get(FilterBlock.FACING);
             return direction == filterFacing;

@@ -2,6 +2,7 @@ package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.block.custom.FilterBlock;
 import cz.lukesmith.automaticsorter.block.custom.PipeBlock;
+import cz.lukesmith.automaticsorter.block.custom.SorterControllerBlock;
 import cz.lukesmith.automaticsorter.inventory.IInventoryAdapter;
 import cz.lukesmith.automaticsorter.inventory.InventoryUtils;
 import cz.lukesmith.automaticsorter.inventory.NoInventoryAdapter;
@@ -160,13 +161,16 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         }
 
         Set<BlockPos> visited = new HashSet<>();
-        BlockPos belowPos = pos.down();
+        // Get the facing direction of the controller block
+        Direction controllerFacing = state.get(SorterControllerBlock.FACING);
+        BlockPos pipePos = pos.offset(controllerFacing.getOpposite());
+        BlockPos inventoryPos = pos.offset(controllerFacing);
 
-        if ((world.getBlockState(belowPos).getBlock() instanceof PipeBlock)) {
+        if ((world.getBlockState(pipePos).getBlock() instanceof PipeBlock)) {
             Queue<BlockPos> queue = new LinkedList<>();
-            queue.add(belowPos);
+            queue.add(pipePos);
 
-            IInventoryAdapter rootInventoryAdapter = InventoryUtils.getInventoryAdapter(world, pos.up());
+            IInventoryAdapter rootInventoryAdapter = InventoryUtils.getInventoryAdapter(world, inventoryPos);
             boolean noInventoryRootChest = rootInventoryAdapter instanceof NoInventoryAdapter;
             boolean itemTransfered = false;
             ArrayList<FilterBlockEntity> rejectedFilters = new ArrayList<>();
