@@ -19,6 +19,40 @@ public class FilterScreenHandler extends ScreenHandler {
     private final PropertyDelegate propertyDelegate;
     private final int inventorySize = 24;
 
+    // Custom slot that can be disabled
+    private static class FilterSlot extends Slot {
+        private final FilterScreenHandler handler;
+
+        public FilterSlot(Inventory inventory, int index, int x, int y, FilterScreenHandler handler) {
+            super(inventory, index, x, y);
+            this.handler = handler;
+        }
+
+        @Override
+        public boolean canInsert(ItemStack stack) {
+            // Prevent inserting items in TEXT_FILTER mode
+            if (handler.getFilterType() == FilterBlockEntity.FilterTypeEnum.TEXT_FILTER.getValue()) {
+                return false;
+            }
+            return super.canInsert(stack);
+        }
+
+        @Override
+        public boolean canTakeItems(PlayerEntity playerEntity) {
+            // Prevent taking items in TEXT_FILTER mode
+            if (handler.getFilterType() == FilterBlockEntity.FilterTypeEnum.TEXT_FILTER.getValue()) {
+                return false;
+            }
+            return super.canTakeItems(playerEntity);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            // Hide the slot in TEXT_FILTER mode
+            return handler.getFilterType() != FilterBlockEntity.FilterTypeEnum.TEXT_FILTER.getValue();
+        }
+    }
+
 
     public FilterScreenHandler(int syncId, PlayerInventory inventory, BlockPos pos) {
         this(syncId, inventory, inventory.player.getWorld().getBlockEntity(pos), new ArrayPropertyDelegate(1));
@@ -36,7 +70,7 @@ public class FilterScreenHandler extends ScreenHandler {
         // Pridat sloty
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 8; j++) {
-                this.addSlot(new Slot(this.inventory, j + i * 8, 26 + j * 18, 15 + i * 18));
+                this.addSlot(new FilterSlot(this.inventory, j + i * 8, 26 + j * 18, 15 + i * 18, this));
             }
         }
 

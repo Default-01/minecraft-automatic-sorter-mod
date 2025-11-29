@@ -129,6 +129,30 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
         return false;
     }
 
+    private static boolean tryTextFilterMode(IInventoryAdapter rootInventoryAdapter, IInventoryAdapter chestInventoryAdapter, FilterBlockEntity filterBlockEntity) {
+        if (rootInventoryAdapter.isEmpty()) {
+            return false;
+        }
+
+        ArrayList<ItemStack> stacks = rootInventoryAdapter.getAllStacks();
+        int stackSize = stacks.size();
+        for (int i = 0; i < stackSize; i++) {
+            ItemStack rootInventoryItemStack = stacks.get(i);
+            if (rootInventoryItemStack.isEmpty()) {
+                continue;
+            }
+
+            if (filterBlockEntity.matchesTextFilter(rootInventoryItemStack)) {
+                if (chestInventoryAdapter.addItem(rootInventoryItemStack)) {
+                    rootInventoryAdapter.removeItem(i, 1);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static boolean tryToTransferItem(World world, FilterBlockEntity filterBlockEntity, BlockPos filterPos, IInventoryAdapter rootInventoryAdapter) {
         Direction filterDirection = world.getBlockState(filterPos).get(FilterBlock.FACING);
         BlockPos chestPos = filterPos.offset(filterDirection);
@@ -145,6 +169,7 @@ public class SorterControllerBlockEntity extends BlockEntity implements Extended
             }
             case IN_INVENTORY -> tryInInventoryMode(rootInventoryAdapter, chestInventoryAdapter);
             case REJECTS -> tryRejectsMode(rootInventoryAdapter, chestInventoryAdapter);
+            case TEXT_FILTER -> tryTextFilterMode(rootInventoryAdapter, chestInventoryAdapter, filterBlockEntity);
             default -> false;
         };
 

@@ -26,6 +26,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(24, ItemStack.EMPTY);
 
     private int filterType = FilterTypeEnum.IN_INVENTORY.getValue();
+    private String textFilter = "";
 
     public FilterBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FILTER_BLOCK_ENTITY, pos, state);
@@ -40,6 +41,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         super.writeNbt(nbt, registryLookup);
         Inventories.writeNbt(nbt, inventory, registryLookup);
         nbt.putInt("FilterType", filterType);
+        nbt.putString("TextFilter", textFilter);
     }
 
     @Override
@@ -47,6 +49,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
         super.readNbt(nbt, registryLookup);
         Inventories.readNbt(nbt, inventory, registryLookup);
         filterType = nbt.getInt("FilterType");
+        textFilter = nbt.getString("TextFilter");
     }
 
     @Override
@@ -107,6 +110,12 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     }
 
     public void setFilterType(int filterType) {
+        // If switching to TEXT_FILTER mode, clear the inventory
+        if (filterType == FilterTypeEnum.TEXT_FILTER.getValue() && this.filterType != filterType) {
+            for (int i = 0; i < inventory.size(); i++) {
+                inventory.set(i, ItemStack.EMPTY);
+            }
+        }
         this.filterType = filterType;
         this.markDirty();
     }
@@ -123,7 +132,8 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     public enum FilterTypeEnum {
         WHITELIST(0),
         IN_INVENTORY(1),
-        REJECTS(2);
+        REJECTS(2),
+        TEXT_FILTER(3);
 
         private final int value;
 
@@ -149,7 +159,8 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
             return switch (FilterTypeEnum.fromValue(number)) {
                 case WHITELIST -> FilterTypeEnum.IN_INVENTORY.getValue();
                 case IN_INVENTORY -> FilterTypeEnum.REJECTS.getValue();
-                case REJECTS -> FilterTypeEnum.WHITELIST.getValue();
+                case REJECTS -> FilterTypeEnum.TEXT_FILTER.getValue();
+                case TEXT_FILTER -> FilterTypeEnum.WHITELIST.getValue();
             };
         }
 
@@ -158,6 +169,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
                 case WHITELIST -> "Whitelist";
                 case IN_INVENTORY -> "In Inventory";
                 case REJECTS -> "Rejects";
+                case TEXT_FILTER -> "Text Filter";
             };
         }
 
@@ -169,5 +181,80 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     @Override
     public int getMaxCountPerStack() {
         return 1;
+    }
+
+    public String getTextFilter() {
+        return textFilter;
+    }
+
+    public void setTextFilter(String textFilter) {
+        this.textFilter = textFilter;
+        this.markDirty();
+    }
+
+    public boolean matchesTextFilter(ItemStack itemStack) {
+        if (textFilter == null || textFilter.trim().isEmpty()) {
+            return false;
+        }
+
+        String itemName = itemStack.getItem().toString().toLowerCase();
+        String translationKey = itemStack.getTranslationKey().toLowerCase();
+        String filterPattern = textFilter.toLowerCase().trim();
+
+        // Helper to match a single pattern (wildcards)
+        java.util.function.Predicate<String> matchPattern = pattern -> {
+            pattern = pattern.trim();
+            if (pattern.isEmpty()) return false;
+            String regex = pattern.replace(".", "\\.").replace("*", ".*").replace("?", ".");
+            return itemName.matches(regex) || translationKey.matches(regex);
+        };
+
+        // Recursive parser for AND/OR/NOT/parentheses
+        class Expr {
+            boolean eval(String expr) {
+                expr = expr.trim();
+                if (expr.isEmpty()) return false;
+                // NOT (!)
+                if (expr.startsWith("!")) {
+                    String sub = expr.substring(1);
+                    return !eval(sub);
+                }
+                // Parentheses (only if not a single pattern)
+                if (expr.startsWith("(") && expr.endsWith(")") && expr.length() > 2) {
+                    return eval(expr.substring(1, expr.length() - 1));
+                }
+                // OR
+                int orIdx = findTopLevel(expr, '|');
+                if (orIdx >= 0) {
+                    String left = expr.substring(0, orIdx);
+                    String right = expr.substring(orIdx + 1);
+                    return eval(left) || eval(right);
+                }
+                // AND
+                int andIdx = findTopLevel(expr, '&');
+                if (andIdx >= 0) {
+                    String left = expr.substring(0, andIdx);
+                    String right = expr.substring(andIdx + 1);
+                    return eval(left) && eval(right);
+                }
+                // Single pattern (no operators)
+                return matchPattern.test(expr);
+            }
+
+            // Find top-level operator (not inside parentheses)
+            int findTopLevel(String expr, char op) {
+                int depth = 0;
+                for (int i = 0; i < expr.length(); i++) {
+                    char c = expr.charAt(i);
+                    if (c == '(') depth++;
+                    else if (c == ')') depth--;
+                    else if (c == op && depth == 0) return i;
+                }
+                return -1;
+            }
+        }
+
+        Expr parser = new Expr();
+        return parser.eval(filterPattern);
     }
 }

@@ -5,6 +5,7 @@ import cz.lukesmith.automaticsorter.block.entity.FilterBlockEntity;
 import cz.lukesmith.automaticsorter.block.entity.ModBlockEntities;
 import cz.lukesmith.automaticsorter.item.ModItemGroups;
 import cz.lukesmith.automaticsorter.item.ModItems;
+import cz.lukesmith.automaticsorter.network.FilterTextPayload;
 import cz.lukesmith.automaticsorter.network.FilterTypePayload;
 import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
 import net.fabricmc.api.ModInitializer;
@@ -29,6 +30,7 @@ public class AutomaticSorter implements ModInitializer {
         ModScreenHandlers.registerScreenHandlers();
 
         PayloadTypeRegistry.playC2S().register(FilterTypePayload.ID, FilterTypePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(FilterTextPayload.ID, FilterTextPayload.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(FilterTypePayload.ID, (payload, context) -> {
             BlockPos blockPos = payload.blockPos();
@@ -36,6 +38,17 @@ public class AutomaticSorter implements ModInitializer {
             context.server().execute(() -> {
                 if (context.player().getWorld().getBlockEntity(blockPos) instanceof FilterBlockEntity filterBlockEntity) {
                     filterBlockEntity.setFilterType(filterType);
+                    filterBlockEntity.markDirty();
+                }
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(FilterTextPayload.ID, (payload, context) -> {
+            BlockPos blockPos = payload.blockPos();
+            String filterText = payload.filterText();
+            context.server().execute(() -> {
+                if (context.player().getWorld().getBlockEntity(blockPos) instanceof FilterBlockEntity filterBlockEntity) {
+                    filterBlockEntity.setTextFilter(filterText);
                     filterBlockEntity.markDirty();
                 }
             });

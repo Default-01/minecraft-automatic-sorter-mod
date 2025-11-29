@@ -1,5 +1,6 @@
 package cz.lukesmith.automaticsorter;
 
+import cz.lukesmith.automaticsorter.network.FilterTextPayload;
 import cz.lukesmith.automaticsorter.network.FilterTypePayload;
 import cz.lukesmith.automaticsorter.screen.FilterScreen;
 import cz.lukesmith.automaticsorter.screen.ModScreenHandlers;
@@ -15,10 +16,17 @@ public class AutomaticSorterClient implements ClientModInitializer {
         HandledScreens.register(ModScreenHandlers.FILTER_SCREEN_HANDLER, FilterScreen::new);
 
         PayloadTypeRegistry.playS2C().register(FilterTypePayload.ID, FilterTypePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(FilterTextPayload.ID, FilterTextPayload.CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(FilterTypePayload.ID, (payload, context) -> {
             context.client().execute(() -> {
                 AutomaticSorter.LOGGER.info("Received packet");
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(FilterTextPayload.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                AutomaticSorter.LOGGER.info("Received text filter packet");
             });
         });
     }
