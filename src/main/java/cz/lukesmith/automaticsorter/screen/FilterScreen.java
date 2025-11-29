@@ -102,7 +102,7 @@ public class FilterScreen extends HandledScreen<FilterScreenHandler> {
         textFilterInput.setEditableColor(16777215); // White text
         textFilterInput.setUneditableColor(11184810); // Gray text when not focused
         
-        // Load the saved text from the block entity
+        // Load the saved text from the block entity (refreshed each time init is called)
         String savedText = handler.blockEntity.getTextFilter();
         if (savedText != null && !savedText.isEmpty()) {
             textFilterInput.setText(savedText);

@@ -1,7 +1,9 @@
 package cz.lukesmith.automaticsorter.block.entity;
 
 import cz.lukesmith.automaticsorter.AutomaticSorter;
+import cz.lukesmith.automaticsorter.network.SyncFilterTextPayload;
 import cz.lukesmith.automaticsorter.screen.FilterScreenHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,6 +13,9 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
@@ -53,6 +58,20 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     }
 
     @Override
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+        NbtCompound nbt = super.toInitialChunkDataNbt(registryLookup);
+        nbt.putInt("FilterType", filterType);
+        nbt.putString("TextFilter", textFilter);
+        return nbt;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
+    }
+
+    @Override
     public BlockPos getScreenOpeningData(ServerPlayerEntity player) {
         return this.pos;
     }
@@ -68,6 +87,11 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
 
     @Override
     public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+        // Send the text filter value to the client when the screen is opened
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            ServerPlayNetworking.send(serverPlayer, new SyncFilterTextPayload(this.pos, this.textFilter));
+        }
+        
         return new FilterScreenHandler(syncId, playerInventory, this, new PropertyDelegate() {
             @Override
             public int get(int index) {
@@ -104,7 +128,7 @@ public class FilterBlockEntity extends BlockEntity implements ImplementedInvento
     @Override
     public void markDirty() {
         super.markDirty();
-        if (world != null) {
+        if (world != null && !world.isClient()) {
             world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_ALL);
         }
     }
